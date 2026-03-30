@@ -24,7 +24,7 @@ export const auth = betterAuth({
     },
   },
   rateLimit: {
-    enabled: true,
+    enabled: config.nodeEnv === "production",
   },
   advanced: {
     useSecureCookies: config.nodeEnv === "production",

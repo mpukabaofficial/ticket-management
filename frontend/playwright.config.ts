@@ -33,7 +33,9 @@ export default defineConfig({
       command: "bun run --env-file=.env.test src/server.ts",
       cwd: backendDir,
       port: 3001,
-      reuseExistingServer: !process.env.CI,
+      // Always restart the backend for each test run so that Better Auth's
+      // in-memory rate-limit counters are cleared between runs.
+      reuseExistingServer: false,
       timeout: 15000,
     },
     {
@@ -41,6 +43,9 @@ export default defineConfig({
       port: 5174,
       reuseExistingServer: !process.env.CI,
       timeout: 15000,
+      env: {
+        VITE_API_URL: "http://localhost:3001",
+      },
     },
   ],
 });

@@ -1,7 +1,7 @@
 import "dotenv/config";
 import { PrismaClient } from "../src/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
-import { hash } from "bcryptjs";
+import { auth } from "../src/lib/auth";
 
 const adapter = new PrismaPg({
   connectionString: process.env.DATABASE_URL!,
@@ -18,15 +18,21 @@ async function main() {
     return;
   }
 
-  const hashedPassword = await hash("admin123", 10);
-
-  await prisma.user.create({
-    data: {
+  const result = await auth.api.signUpEmail({
+    body: {
       email: "admin@ticketmanagement.com",
       name: "Admin",
-      password: hashedPassword,
-      role: "ADMIN",
+      password: "admin123",
     },
+  });
+
+  if (!result?.user?.id) {
+    throw new Error("Failed to create admin user via Better Auth");
+  }
+
+  await prisma.user.update({
+    where: { id: result.user.id },
+    data: { role: "ADMIN" },
   });
 
   console.log("Seed complete: admin user created.");

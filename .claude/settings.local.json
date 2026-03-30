@@ -18,7 +18,10 @@
       "Bash(pg_isready -h localhost -p 5433)",
       "Bash(pg_isready -h localhost -p 5434)",
       "Bash(ls:*)",
-      "Bash(code --command workbench.action.reloadWindow)"
+      "Bash(code --command workbench.action.reloadWindow)",
+      "Bash(bun remove:*)",
+      "Bash(openssl rand:*)",
+      "Bash(curl:*)"
     ]
   }
 }

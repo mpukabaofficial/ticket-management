@@ -37,4 +37,17 @@ app.use(express.json());
 
 app.use("/api", routes);
 
+// Global error handler
+app.use(
+  (
+    err: Error,
+    _req: express.Request,
+    res: express.Response,
+    _next: express.NextFunction
+  ) => {
+    console.error(err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+);
+
 export default app;

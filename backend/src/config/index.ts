@@ -3,7 +3,9 @@ import dotenv from "dotenv";
 dotenv.config();
 
 export const config = {
-  port: parseInt(process.env.PORT || "3000", 10),
-  clientUrl: process.env.CLIENT_URL || "http://localhost:5173",
-  nodeEnv: process.env.NODE_ENV || "development",
+  port: parseInt(process.env.PORT!, 10),
+  trustedOrigins: process.env.TRUSTED_ORIGINS!.split(",").map((origin) =>
+    origin.trim()
+  ),
+  nodeEnv: process.env.NODE_ENV!,
 };

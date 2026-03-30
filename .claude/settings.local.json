@@ -23,7 +23,8 @@
       "Bash(openssl rand:*)",
       "Bash(curl:*)",
       "Bash(bun prisma/seed.ts)",
-      "Bash(bun -e \":*)"
+      "Bash(bun -e \":*)",
+      "Bash(echo \"EXIT: $?\")"
     ]
   }
 }

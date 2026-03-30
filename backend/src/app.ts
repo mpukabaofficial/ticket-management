@@ -7,7 +7,7 @@ import routes from "./routes";
 
 const app = express();
 
-app.use(cors({ origin: config.clientUrl, credentials: true }));
+app.use(cors({ origin: config.trustedOrigins, credentials: true }));
 
 // Better Auth handler MUST be before express.json()
 app.all("/api/auth/*splat", toNodeHandler(auth));

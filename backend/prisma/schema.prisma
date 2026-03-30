@@ -1,0 +1,78 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  AGENT
+}
+
+enum TicketStatus {
+  OPEN
+  RESOLVED
+  CLOSED
+}
+
+enum TicketCategory {
+  GENERAL
+  TECHNICAL
+  REFUND
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String
+  password  String
+  role      Role     @default(AGENT)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  assignedTickets Ticket[]
+  messages        Message[]
+  sessions        Session[]
+}
+
+model Ticket {
+  id        String         @id @default(uuid())
+  subject   String
+  body      String
+  status    TicketStatus   @default(OPEN)
+  category  TicketCategory
+  senderEmail String
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  assignedToId String?
+  assignedTo   User?   @relation(fields: [assignedToId], references: [id])
+
+  messages Message[]
+}
+
+model Message {
+  id        String   @id @default(uuid())
+  body      String
+  sender    String
+  createdAt DateTime @default(now())
+
+  ticketId String
+  ticket   Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id])
+}
+
+model Session {
+  id        String   @id @default(uuid())
+  sid       String   @unique
+  data      String
+  expiresAt DateTime
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}

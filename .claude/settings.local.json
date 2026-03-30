@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__context7__resolve-library-id",
+      "mcp__context7__query-docs",
+      "Bash(cd:*)",
+      "Bash(bun init:*)",
+      "Bash(bun add:*)",
+      "Bash(timeout 5 bun run start)",
+      "Bash(bunx prisma:*)",
+      "Bash(bun create:*)",
+      "Bash(bun install:*)",
+      "Bash(bun run:*)",
+      "Bash(psql -U postgres -c \"SELECT 1\")",
+      "Bash(pg_isready)",
+      "Bash(pg_isready -h localhost -p 5432 2>&1)",
+      "Bash(pg_isready -h localhost -p 5432)",
+      "Bash(pg_isready -h localhost -p 5433)",
+      "Bash(pg_isready -h localhost -p 5434)",
+      "Bash(ls:*)",
+      "Bash(code --command workbench.action.reloadWindow)"
+    ]
+  }
+}

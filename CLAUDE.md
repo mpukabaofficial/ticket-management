@@ -34,7 +34,7 @@ frontend/
     index.css           — Tailwind imports + shadcn theme variables
     pages/              — Login, Dashboard, NotFound
     components/         — PrivateRoute (session guard)
-    components/ui/      — shadcn/ui components (button, etc.)
+    components/ui/      — shadcn/ui components (alert, badge, button, card, field, input, label, separator, skeleton, sonner)
     layouts/            — MainLayout (navbar + sign-out)
     lib/auth-client.ts  — Better Auth client instance
     lib/utils.ts        — cn() helper (clsx + tailwind-merge)
@@ -102,11 +102,15 @@ docker-compose.yml      — Local dev (Postgres on port 5433, backend, frontend)
 ## Key Patterns
 - **Middleware order in app.ts:** CORS → Better Auth handler → `express.json()` → routes
 - Prisma uses the `@prisma/adapter-pg` driver adapter (not the default Prisma engine)
-- Frontend forms use React Hook Form with Zod schemas via `zodResolver`
+- **Forms:** React Hook Form + Zod via `zodResolver`, using shadcn `Controller` + `Field` + `FieldLabel` + `Input` + `FieldError` pattern (see Login.tsx for reference)
 - **Import alias:** `@/*` maps to `frontend/src/*` (configured in tsconfig + vite.config.ts)
 - **Styling:** Use Tailwind utility classes only — no custom CSS classes. Use shadcn semantic color tokens (`bg-background`, `text-foreground`, `text-muted-foreground`, `border-border`, `bg-primary`, `text-destructive`, etc.) instead of hardcoded color values (e.g. `bg-gray-500`, `text-red-600`)
 - **shadcn components:** Add with `bunx --bun shadcn@latest add <component>` from the frontend directory
 - **cn() helper:** Use `cn()` from `@/lib/utils` to merge Tailwind classes conditionally
+- **Icons:** Use `@remixicon/react` (e.g. `RiLoaderLine` for spinners). Configured as shadcn icon library.
+- **Toasts:** `<Toaster />` from sonner is mounted in App.tsx — use `toast()` from `sonner` for notifications
+- **Loading states:** Use `<RiLoaderLine className="animate-spin" />` for spinners, `<Skeleton />` for content placeholders
+- **Always use shadcn components** (Button, Input, Card, Alert, Badge, Field, etc.) instead of raw HTML elements
 - Backend uses ES modules (`"type": "module"`) with direct TypeScript execution via Bun (no build step)
 
 ## Docker

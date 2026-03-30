@@ -1,9 +1,15 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { RiLoaderLine } from "@remixicon/react";
 import { authClient } from "@/lib/auth-client";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 
 const loginSchema = z.object({
   email: z.string().min(1, "Email is required").email("Invalid email address"),
@@ -23,11 +29,7 @@ export default function Login() {
     }
   }, [session, navigate]);
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isSubmitting },
-  } = useForm<LoginFormData>({
+  const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
       email: "",
@@ -51,56 +53,75 @@ export default function Login() {
 
   return (
     <div className="flex items-center justify-center min-h-svh p-6">
-      <div className="w-full max-w-[380px] text-left">
-        <h1 className="text-3xl font-medium text-foreground mb-1">Sign in</h1>
-        <p className="text-muted-foreground mb-6">Ticket Management System</p>
+      <Card className="w-full max-w-[380px]">
+        <CardHeader>
+          <CardTitle className="text-2xl">Sign in</CardTitle>
+          <CardDescription>Ticket Management System</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={form.handleSubmit(onSubmit)}>
+            <FieldGroup>
+              {serverError && (
+                <Alert variant="destructive">
+                  <AlertDescription>{serverError}</AlertDescription>
+                </Alert>
+              )}
 
-        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
-          {serverError && (
-            <div className="bg-destructive/10 border border-destructive/30 text-destructive px-3 py-2.5 rounded-md text-sm">
-              {serverError}
-            </div>
-          )}
+              <Controller
+                name="email"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid || undefined}>
+                    <FieldLabel htmlFor={field.name}>Email</FieldLabel>
+                    <Input
+                      {...field}
+                      id={field.name}
+                      type="email"
+                      placeholder="admin@example.com"
+                      aria-invalid={fieldState.invalid}
+                    />
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
 
-          <label className="flex flex-col gap-1 text-sm font-medium text-foreground">
-            Email
-            <input
-              type="email"
-              {...register("email")}
-              placeholder="admin@example.com"
-              className={`px-3 py-2.5 border rounded-md text-[15px] bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-ring focus:ring-3 focus:ring-ring/20 ${
-                errors.email ? "border-destructive" : "border-input"
-              }`}
-            />
-            {errors.email && (
-              <span className="text-destructive text-xs mt-1">{errors.email.message}</span>
-            )}
-          </label>
+              <Controller
+                name="password"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid || undefined}>
+                    <FieldLabel htmlFor={field.name}>Password</FieldLabel>
+                    <Input
+                      {...field}
+                      id={field.name}
+                      type="password"
+                      placeholder="Password"
+                      aria-invalid={fieldState.invalid}
+                    />
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
 
-          <label className="flex flex-col gap-1 text-sm font-medium text-foreground">
-            Password
-            <input
-              type="password"
-              {...register("password")}
-              placeholder="Password"
-              className={`px-3 py-2.5 border rounded-md text-[15px] bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-ring focus:ring-3 focus:ring-ring/20 ${
-                errors.password ? "border-destructive" : "border-input"
-              }`}
-            />
-            {errors.password && (
-              <span className="text-destructive text-xs mt-1">{errors.password.message}</span>
-            )}
-          </label>
-
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="py-2.5 bg-primary text-primary-foreground rounded-md text-[15px] font-medium cursor-pointer mt-1 hover:not-disabled:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed"
-          >
-            {isSubmitting ? "Signing in..." : "Sign in"}
-          </button>
-        </form>
-      </div>
+              <Button
+                type="submit"
+                size="lg"
+                className="w-full"
+                disabled={form.formState.isSubmitting}
+              >
+                {form.formState.isSubmitting && (
+                  <RiLoaderLine className="animate-spin" />
+                )}
+                {form.formState.isSubmitting ? "Signing in..." : "Sign in"}
+              </Button>
+            </FieldGroup>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import { Outlet, useNavigate } from "react-router";
 import { authClient } from "@/lib/auth-client";
+import { Button } from "@/components/ui/button";
 
 export default function MainLayout() {
   const { data: session } = authClient.useSession();
@@ -22,12 +23,9 @@ export default function MainLayout() {
         {session && (
           <div className="flex items-center gap-3 text-sm text-muted-foreground">
             <span>{session.user.name}</span>
-            <button
-              onClick={handleSignOut}
-              className="bg-transparent border border-input rounded-md px-3 py-1 text-[13px] text-muted-foreground cursor-pointer hover:border-ring hover:text-foreground"
-            >
+            <Button variant="outline" size="sm" onClick={handleSignOut}>
               Sign out
-            </button>
+            </Button>
           </div>
         )}
       </nav>

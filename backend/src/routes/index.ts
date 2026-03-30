@@ -8,7 +8,8 @@ router.get("/health", (_req, res) => {
 });
 
 router.get("/me", requireAuth, (req, res) => {
-  res.json({ user: req.user });
+  const { id, email, name, role } = req.user as Record<string, unknown>;
+  res.json({ user: { id, email, name, role } });
 });
 
 export default router;

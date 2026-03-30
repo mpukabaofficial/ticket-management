@@ -3,10 +3,8 @@ services:
     image: postgres:16-alpine
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
       POSTGRES_DB: helpdesk
-    ports:
-      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
@@ -14,10 +12,10 @@ services:
     build: ./backend
     ports:
       - "3000:3000"
+    env_file:
+      - ./backend/.env
     environment:
-      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/helpdesk
-      CLIENT_URL: http://localhost:5173
-      NODE_ENV: development
+      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD:-postgres}@postgres:5432/helpdesk
     depends_on:
       - postgres
 

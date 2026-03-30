@@ -1,5 +1,7 @@
 import express from "express";
 import cors from "cors";
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
 import { toNodeHandler } from "better-auth/node";
 import { config } from "./config";
 import { auth } from "./lib/auth";
@@ -7,10 +9,29 @@ import routes from "./routes";
 
 const app = express();
 
+// Security headers
+app.use(helmet());
+
+// CORS
 app.use(cors({ origin: config.trustedOrigins, credentials: true }));
+
+// Rate limiting
+const limiter = ({ max, minutes }: { max: number; minutes: number }) =>
+  rateLimit({
+    windowMs: minutes * 60 * 1000,
+    max,
+    standardHeaders: true,
+    legacyHeaders: false,
+  });
+
+// Auth limiter must be before the auth handler
+app.use("/api/auth", limiter({ max: 20, minutes: 15 }));
 
 // Better Auth handler MUST be before express.json()
 app.all("/api/auth/*splat", toNodeHandler(auth));
+
+// General API limiter for all other routes
+app.use("/api", limiter({ max: 100, minutes: 15 }));
 
 app.use(express.json());
 

@@ -1,0 +1,1 @@
+- [Security Architecture Overview](project_security_architecture.md) — Auth config, missing controls, credential exposure, Docker gaps found in 2026-03-29 review

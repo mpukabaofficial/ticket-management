@@ -11,6 +11,7 @@ export const auth = betterAuth({
   disabledPaths: ["/sign-up/email"],
   emailAndPassword: {
     enabled: true,
+    minPasswordLength: 12,
   },
   user: {
     additionalFields: {
@@ -21,5 +22,11 @@ export const auth = betterAuth({
         input: false,
       },
     },
+  },
+  rateLimit: {
+    enabled: true,
+  },
+  advanced: {
+    useSecureCookies: config.nodeEnv === "production",
   },
 });

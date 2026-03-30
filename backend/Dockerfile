@@ -7,5 +7,7 @@ RUN bun install --frozen-lockfile
 COPY . .
 RUN bun run db:generate
 
+USER bun
+
 EXPOSE 3000
 CMD ["bun", "src/server.ts"]

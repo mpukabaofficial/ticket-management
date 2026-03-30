@@ -4,6 +4,11 @@
   "scripts": {
     "dev:backend": "cd backend && bun run dev",
     "dev:frontend": "cd frontend && bun run dev",
-    "dev": "bun run dev:backend & bun run dev:frontend"
+    "dev": "bun run dev:backend & bun run dev:frontend",
+    "test:e2e": "cd frontend && bun run test:e2e",
+    "typecheck": "cd backend && bun run typecheck && cd ../frontend && bun run typecheck",
+    "lint": "cd frontend && bun run lint",
+    "build": "bun run test:e2e && bun run typecheck && bun run lint && cd frontend && bun run build",
+    "docker:test-db": "docker compose up -d postgres-test"
   }
 }

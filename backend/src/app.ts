@@ -24,14 +24,14 @@ const limiter = ({ max, minutes }: { max: number; minutes: number }) =>
     legacyHeaders: false,
   });
 
-// Auth limiter must be before the auth handler
-app.use("/api/auth", limiter({ max: 20, minutes: 15 }));
+// Rate limiting (production only)
+if (config.nodeEnv === "production") {
+  app.use("/api/auth", limiter({ max: 20, minutes: 15 }));
+  app.use("/api", limiter({ max: 100, minutes: 15 }));
+}
 
 // Better Auth handler MUST be before express.json()
 app.all("/api/auth/*splat", toNodeHandler(auth));
-
-// General API limiter for all other routes
-app.use("/api", limiter({ max: 100, minutes: 15 }));
 
 app.use(express.json());
 

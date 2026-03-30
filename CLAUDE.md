@@ -10,6 +10,7 @@ AI-powered ticket management system for an online school. See `project-scope.md`
 - **Database:** PostgreSQL + Prisma 7 ORM (with `@prisma/adapter-pg` driver adapter)
 - **Auth:** Better Auth with email/password, database sessions
 - **Forms:** React Hook Form + Zod (with `@hookform/resolvers`)
+- **Testing:** Playwright (E2E)
 - **Deployment:** Docker + Railway
 
 ## Project Structure
@@ -29,6 +30,10 @@ backend/
     schema.prisma       — Database schema (includes Better Auth tables + role field)
     seed.ts             — Seeds admin user via Better Auth API
 frontend/
+  playwright.config.ts  — Playwright E2E test configuration
+  e2e/
+    global-setup.ts     — Migrate + seed test database before tests
+    global-teardown.ts  — Truncate test database after tests
   components.json       — shadcn/ui configuration
   src/
     index.css           — Tailwind imports + shadcn theme variables
@@ -40,7 +45,7 @@ frontend/
     lib/utils.ts        — cn() helper (clsx + tailwind-merge)
     hooks/              — Custom hooks (empty, in progress)
     services/           — API services (empty, in progress)
-docker-compose.yml      — Local dev (Postgres on port 5433, backend, frontend)
+docker-compose.yml      — Docker services (dev Postgres, test Postgres, backend, frontend)
 ```
 
 ## Development
@@ -52,6 +57,12 @@ docker-compose.yml      — Local dev (Postgres on port 5433, backend, frontend)
 - `cd backend && bun run db:generate` — regenerate Prisma client
 - `cd backend && bun run db:seed` — seed admin user
 - `docker compose up -d` — start Postgres and services
+- `docker compose up -d postgres-test` — start test database only
+- `cd frontend && bun run test:e2e` — run Playwright E2E tests
+- `cd frontend && bun run test:e2e:ui` — run E2E tests with Playwright UI
+- `bun run build` — full build pipeline (tests → typecheck → lint → build)
+- `bun run typecheck` — type-check backend and frontend
+- `bun run lint` — lint frontend
 
 ## Authentication
 
@@ -109,7 +120,8 @@ docker-compose.yml      — Local dev (Postgres on port 5433, backend, frontend)
 - `/api/auth/*` — Better Auth endpoints (sign-in, sign-out, session, etc.)
 
 ## Key Patterns
-- **Middleware order in app.ts:** CORS → Better Auth handler → `express.json()` → routes
+- **Middleware order in app.ts:** CORS → Helmet → Better Auth handler → `express.json()` → rate limiter → routes
+- **Security:** Helmet for HTTP security headers, express-rate-limit for API rate limiting
 - Prisma uses the `@prisma/adapter-pg` driver adapter (not the default Prisma engine)
 - **Forms:** React Hook Form + Zod via `zodResolver`, using shadcn `Controller` + `Field` + `FieldLabel` + `Input` + `FieldError` pattern (see Login.tsx for reference)
 - **Import alias:** `@/*` maps to `frontend/src/*` (configured in tsconfig + vite.config.ts)
@@ -123,9 +135,22 @@ docker-compose.yml      — Local dev (Postgres on port 5433, backend, frontend)
 - Backend uses ES modules (`"type": "module"`) with direct TypeScript execution via Bun (no build step)
 
 ## Docker
-- **docker-compose.yml:** PostgreSQL 16 Alpine + backend + frontend (Nginx)
-- PostgreSQL: user `postgres`, password `postgres`, database `helpdesk`, port 5432
+- **docker-compose.yml:** PostgreSQL 16 Alpine (dev + test) + backend + frontend (Nginx)
+- Dev PostgreSQL: user `postgres`, password via `POSTGRES_PASSWORD` env var, database `helpdesk`
+- Test PostgreSQL (`postgres-test`): user `postgres`, password `postgres_test`, database `helpdesk_test`, port **5434**
 - Frontend Nginx: SPA fallback via `try_files`, API proxy to `http://backend:3000`
+
+## E2E Testing
+- **Framework:** Playwright (installed in `frontend/`)
+- **Test directory:** `frontend/e2e/`
+- **Test database:** Separate PostgreSQL instance via Docker on port 5434 (`helpdesk_test`)
+- **Config:** `frontend/playwright.config.ts` — Chromium only, HTML reporter
+- **Global setup** (`e2e/global-setup.ts`): runs `prisma migrate deploy`, `prisma generate`, and seed against test DB
+- **Global teardown** (`e2e/global-teardown.ts`): truncates all tables (preserves schema/migrations)
+- **Web servers:** Playwright auto-starts backend (port 3001, using `backend/.env.test`) and frontend (port 5174)
+- **Backend .env.test:** test-specific env vars — different ports, test DB URL, test auth secret
+- **Isolation:** Test ports (3001/5174/5434) don't conflict with dev ports (3000/5173/5433)
+- **Workflow:** `docker compose up -d postgres-test` → `cd frontend && bun run test:e2e`
 
 ## Environment Variables
 - Backend: `PORT`, `TRUSTED_ORIGINS` (comma-separated origins), `NODE_ENV`, `DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`

@@ -58,6 +58,7 @@ docker-compose.yml      — Docker services (dev Postgres, test Postgres, backen
 - `cd backend && bun run db:seed` — seed admin user
 - `docker compose up -d` — start Postgres and services
 - `docker compose up -d postgres-test` — start test database only
+- **E2E tests:** Always use the `e2e-test-writer` agent to write Playwright tests — do not write E2E tests directly
 - `cd frontend && bun run test:e2e` — run Playwright E2E tests
 - `cd frontend && bun run test:e2e:ui` — run E2E tests with Playwright UI
 - `bun run build` — full build pipeline (tests → typecheck → lint → build)
@@ -139,18 +140,6 @@ docker-compose.yml      — Docker services (dev Postgres, test Postgres, backen
 - Dev PostgreSQL: user `postgres`, password via `POSTGRES_PASSWORD` env var, database `helpdesk`
 - Test PostgreSQL (`postgres-test`): user `postgres`, password `postgres_test`, database `helpdesk_test`, port **5434**
 - Frontend Nginx: SPA fallback via `try_files`, API proxy to `http://backend:3000`
-
-## E2E Testing
-- **Framework:** Playwright (installed in `frontend/`)
-- **Test directory:** `frontend/e2e/`
-- **Test database:** Separate PostgreSQL instance via Docker on port 5434 (`helpdesk_test`)
-- **Config:** `frontend/playwright.config.ts` — Chromium only, HTML reporter
-- **Global setup** (`e2e/global-setup.ts`): runs `prisma migrate deploy`, `prisma generate`, and seed against test DB
-- **Global teardown** (`e2e/global-teardown.ts`): truncates all tables (preserves schema/migrations)
-- **Web servers:** Playwright auto-starts backend (port 3001, using `backend/.env.test`) and frontend (port 5174)
-- **Backend .env.test:** test-specific env vars — different ports, test DB URL, test auth secret
-- **Isolation:** Test ports (3001/5174/5434) don't conflict with dev ports (3000/5173/5433)
-- **Workflow:** `docker compose up -d postgres-test` → `cd frontend && bun run test:e2e`
 
 ## Environment Variables
 - Backend: `PORT`, `TRUSTED_ORIGINS` (comma-separated origins), `NODE_ENV`, `DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`

@@ -8,6 +8,7 @@ export const auth = betterAuth({
     provider: "postgresql",
   }),
   trustedOrigins: [config.clientUrl],
+  disabledPaths: ["/sign-up/email"],
   emailAndPassword: {
     enabled: true,
   },

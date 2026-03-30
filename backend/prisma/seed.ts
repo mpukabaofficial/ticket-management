@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { PrismaClient } from "../src/generated/prisma/client";
+import { PrismaClient, Role } from "../src/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { auth } from "../src/lib/auth";
 
@@ -9,8 +9,11 @@ const adapter = new PrismaPg({
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
+  const adminEmail = process.env.ADMIN_EMAIL!;
+  const adminPassword = process.env.ADMIN_PASSWORD!;
+
   const existingAdmin = await prisma.user.findFirst({
-    where: { role: "ADMIN" },
+    where: { role: Role.ADMIN },
   });
 
   if (existingAdmin) {
@@ -20,9 +23,9 @@ async function main() {
 
   const result = await auth.api.signUpEmail({
     body: {
-      email: "admin@ticketmanagement.com",
+      email: adminEmail,
       name: "Admin",
-      password: "admin123",
+      password: adminPassword,
     },
   });
 
@@ -32,10 +35,10 @@ async function main() {
 
   await prisma.user.update({
     where: { id: result.user.id },
-    data: { role: "ADMIN" },
+    data: { role: Role.ADMIN },
   });
 
-  console.log("Seed complete: admin user created.");
+  console.log(`Seed complete: admin user created (${adminEmail}).`);
 }
 
 main()

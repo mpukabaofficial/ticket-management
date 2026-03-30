@@ -21,7 +21,9 @@
       "Bash(code --command workbench.action.reloadWindow)",
       "Bash(bun remove:*)",
       "Bash(openssl rand:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(bun prisma/seed.ts)",
+      "Bash(bun -e \":*)"
     ]
   }
 }

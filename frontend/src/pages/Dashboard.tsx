@@ -12,10 +12,10 @@ export default function Dashboard() {
 
   return (
     <div>
-      <h1>Dashboard</h1>
-      <p>Welcome to the Ticket Management System.</p>
-      <p>
-        Backend status: <strong>{status === "ok" ? "Connected" : "Disconnected"}</strong>
+      <h1 className="text-3xl font-medium text-foreground mb-4">Dashboard</h1>
+      <p className="text-muted-foreground">Welcome to the Ticket Management System.</p>
+      <p className="text-muted-foreground mt-2">
+        Backend status: <strong className="text-foreground">{status === "ok" ? "Connected" : "Disconnected"}</strong>
       </p>
     </div>
   );

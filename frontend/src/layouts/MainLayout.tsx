@@ -6,8 +6,13 @@ export default function MainLayout() {
   const navigate = useNavigate();
 
   const handleSignOut = async () => {
-    await authClient.signOut();
-    navigate("/login");
+    await authClient.signOut({
+      fetchOptions: {
+        onSuccess: () => {
+          navigate("/login");
+        },
+      },
+    });
   };
 
   return (

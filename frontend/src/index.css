@@ -251,3 +251,19 @@ code {
   border-radius: 6px;
   font-size: 14px;
 }
+
+.login-card input.input-error {
+  border-color: #ef4444;
+}
+
+.login-card input.input-error:focus {
+  border-color: #ef4444;
+  outline-color: #ef4444;
+}
+
+.field-error {
+  color: #ef4444;
+  font-size: 13px;
+  margin-top: 4px;
+  display: block;
+}

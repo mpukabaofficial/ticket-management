@@ -32,8 +32,8 @@ frontend/
   components.json       — shadcn/ui configuration
   src/
     index.css           — Tailwind imports + shadcn theme variables
-    pages/              — Login, Dashboard, NotFound
-    components/         — PrivateRoute (session guard)
+    pages/              — Login, Dashboard, Users, NotFound
+    components/         — PrivateRoute (auth guard), AdminRoute (role guard)
     components/ui/      — shadcn/ui components (alert, badge, button, card, field, input, label, separator, skeleton, sonner)
     layouts/            — MainLayout (navbar + sign-out)
     lib/auth-client.ts  — Better Auth client instance
@@ -57,7 +57,7 @@ docker-compose.yml      — Local dev (Postgres on port 5433, backend, frontend)
 
 ### Better Auth Setup
 - **Server config:** `backend/src/lib/auth.ts` — uses `betterAuth()` with `prismaAdapter`
-- **Client config:** `frontend/src/lib/auth-client.ts` — `createAuthClient()` from `better-auth/react`
+- **Client config:** `frontend/src/lib/auth-client.ts` — `createAuthClient()` from `better-auth/react` with `inferAdditionalFields` plugin for typed `role` field
 - **Handler route:** `app.all("/api/auth/*splat", toNodeHandler(auth))` — mounted before `express.json()` (required — Better Auth needs raw request body)
 - **Sign-up disabled:** `disabledPaths: ["/sign-up/email"]` — users created via seed/admin only
 
@@ -77,13 +77,22 @@ docker-compose.yml      — Local dev (Postgres on port 5433, backend, frontend)
 2. Server validates credentials, creates session, sets cookie
 3. Frontend uses `authClient.useSession()` hook for session state
 4. Protected API routes use `requireAuth` middleware → access `req.user`
-5. Frontend route guard: `PrivateRoute` component redirects to `/login` if no session
+5. Frontend route guard: `PrivateRoute` redirects to `/login` if no session; `AdminRoute` redirects to `/` if not ADMIN
 
 ### Roles
 - `role` field on User model: `ADMIN` | `AGENT` (default: `AGENT`)
 - Role is NOT managed by Better Auth — set via direct Prisma update after user creation
 - Seed script creates admin by calling `auth.api.signUpEmail()` then updating role via Prisma
-- No role-based authorization middleware yet (ready for RBAC implementation)
+- **Frontend route guards:** `PrivateRoute` (any authenticated user) and `AdminRoute` (ADMIN role only) — both show loading spinner while session loads
+- **Navbar:** Admin-only links (e.g. Users) conditionally rendered via `session.user.role === "ADMIN"`
+
+### Frontend Routes
+```
+/login          → Login (public)
+/               → Dashboard (authenticated)
+/users          → Users (admin only)
+*               → NotFound (authenticated)
+```
 
 ## Database Schema
 - **Enums:** `Role` (ADMIN, AGENT), `TicketStatus` (OPEN, RESOLVED, CLOSED), `TicketCategory` (GENERAL, TECHNICAL, REFUND)

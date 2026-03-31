@@ -14,4 +14,8 @@ export type {
 export {
   inboundEmailSchema,
   type InboundEmailInput,
+  ticketSortableColumns,
+  type TicketSortableColumn,
+  ticketListQuerySchema,
+  type TicketListQuery,
 } from "./schemas/ticket";

@@ -1,3 +1,4 @@
+import type { TicketSortableColumn } from "shared";
 import prisma from "../config/db";
 
 const DUPLICATE_WINDOW_MS = 5 * 60 * 1000; // 5 minutes
@@ -22,10 +23,13 @@ const ticketWithMessagesSelect = {
   },
 };
 
-export async function getTickets() {
+export async function getTickets(
+  sortBy: TicketSortableColumn = "createdAt",
+  sortOrder: "asc" | "desc" = "desc",
+) {
   return prisma.ticket.findMany({
     select: ticketSelect,
-    orderBy: { createdAt: "desc" },
+    orderBy: { [sortBy]: sortOrder },
   });
 }
 

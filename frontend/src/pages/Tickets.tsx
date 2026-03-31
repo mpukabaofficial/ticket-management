@@ -1,7 +1,20 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
+import {
+  useReactTable,
+  getCoreRowModel,
+  flexRender,
+  type ColumnDef,
+  type SortingState,
+} from "@tanstack/react-table";
 import { TicketStatus } from "shared";
 import type { TicketStatusType, TicketCategoryType } from "shared";
+import {
+  RiArrowUpSLine,
+  RiArrowDownSLine,
+  RiArrowUpDownLine,
+} from "@remixicon/react";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Table,
@@ -38,20 +51,99 @@ function statusVariant(status: TicketStatusType) {
   }
 }
 
+const columns: ColumnDef<Ticket>[] = [
+  {
+    accessorKey: "id",
+    header: "#",
+    cell: ({ row }) => (
+      <span className="text-muted-foreground">{row.getValue("id")}</span>
+    ),
+  },
+  {
+    accessorKey: "subject",
+    header: "Subject",
+    cell: ({ row }) => (
+      <span className="font-medium">{row.getValue("subject")}</span>
+    ),
+  },
+  {
+    accessorKey: "senderName",
+    header: "Sender",
+    cell: ({ row }) => (
+      <span className="text-muted-foreground">
+        {row.getValue("senderName")}
+      </span>
+    ),
+  },
+  {
+    accessorKey: "category",
+    header: "Category",
+    cell: ({ row }) => {
+      const category = row.getValue("category") as string | null;
+      return category ? (
+        <Badge variant="secondary">{category}</Badge>
+      ) : (
+        <span className="text-muted-foreground">—</span>
+      );
+    },
+  },
+  {
+    accessorKey: "status",
+    header: "Status",
+    cell: ({ row }) => (
+      <Badge variant={statusVariant(row.getValue("status"))}>
+        {row.getValue("status") as string}
+      </Badge>
+    ),
+  },
+  {
+    accessorKey: "createdAt",
+    header: "Created",
+    cell: ({ row }) => (
+      <span className="text-muted-foreground">
+        {new Date(row.getValue("createdAt") as string).toLocaleDateString(
+          undefined,
+          { year: "numeric", month: "short", day: "numeric" },
+        )}
+      </span>
+    ),
+  },
+];
+
 export default function Tickets() {
+  const [sorting, setSorting] = useState<SortingState>([
+    { id: "createdAt", desc: true },
+  ]);
+
+  const sortBy = sorting[0]?.id ?? "createdAt";
+  const sortOrder = sorting[0]?.desc ? "desc" : "asc";
+
   const {
     data: tickets,
     isPending,
     error,
   } = useQuery({
-    queryKey: ["tickets"],
+    queryKey: ["tickets", sortBy, sortOrder],
     queryFn: () =>
       axios
         .get<{ tickets: Ticket[] }>(
           `${import.meta.env.VITE_API_URL}/api/tickets`,
-          { withCredentials: true },
+          {
+            withCredentials: true,
+            params: { sortBy, sortOrder },
+          },
         )
         .then((res) => res.data.tickets),
+  });
+
+  const table = useReactTable({
+    data: tickets ?? [],
+    columns,
+    state: { sorting },
+    onSortingChange: setSorting,
+    manualSorting: true,
+    enableMultiSort: false,
+    getCoreRowModel: getCoreRowModel(),
   });
 
   const errorMessage = error
@@ -117,49 +209,50 @@ export default function Tickets() {
           ) : (
             <Table>
               <TableHeader>
-                <TableRow>
-                  <TableHead className="w-16">#</TableHead>
-                  <TableHead>Subject</TableHead>
-                  <TableHead>Sender</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Created</TableHead>
-                </TableRow>
+                {table.getHeaderGroups().map((headerGroup) => (
+                  <TableRow key={headerGroup.id}>
+                    {headerGroup.headers.map((header) => (
+                      <TableHead
+                        key={header.id}
+                        className={
+                          header.column.getCanSort()
+                            ? "cursor-pointer select-none"
+                            : ""
+                        }
+                        onClick={header.column.getToggleSortingHandler()}
+                      >
+                        <div className="flex items-center gap-1">
+                          {flexRender(
+                            header.column.columnDef.header,
+                            header.getContext(),
+                          )}
+                          {header.column.getIsSorted() === "asc" && (
+                            <RiArrowUpSLine className="size-4" />
+                          )}
+                          {header.column.getIsSorted() === "desc" && (
+                            <RiArrowDownSLine className="size-4" />
+                          )}
+                          {header.column.getCanSort() &&
+                            !header.column.getIsSorted() && (
+                              <RiArrowUpDownLine className="size-4 text-muted-foreground/50" />
+                            )}
+                        </div>
+                      </TableHead>
+                    ))}
+                  </TableRow>
+                ))}
               </TableHeader>
               <TableBody>
-                {tickets?.map((ticket) => (
-                  <TableRow key={ticket.id}>
-                    <TableCell className="text-muted-foreground">
-                      {ticket.id}
-                    </TableCell>
-                    <TableCell className="font-medium">
-                      {ticket.subject}
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {ticket.senderName}
-                    </TableCell>
-                    <TableCell>
-                      {ticket.category ? (
-                        <Badge variant="secondary">{ticket.category}</Badge>
-                      ) : (
-                        <span className="text-muted-foreground">—</span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={statusVariant(ticket.status)}>
-                        {ticket.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {new Date(ticket.createdAt).toLocaleDateString(
-                        undefined,
-                        {
-                          year: "numeric",
-                          month: "short",
-                          day: "numeric",
-                        },
-                      )}
-                    </TableCell>
+                {table.getRowModel().rows.map((row) => (
+                  <TableRow key={row.id}>
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext(),
+                        )}
+                      </TableCell>
+                    ))}
                   </TableRow>
                 ))}
               </TableBody>

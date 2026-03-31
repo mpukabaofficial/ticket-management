@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { inboundEmailSchema } from "shared";
+import { inboundEmailSchema, ticketListQuerySchema } from "shared";
 import {
   getTickets,
   getTicketById,
@@ -8,8 +8,11 @@ import {
 } from "../services/ticket.service";
 import { validate } from "../utils/validate";
 
-export async function listTickets(_req: Request, res: Response) {
-  const tickets = await getTickets();
+export async function listTickets(req: Request, res: Response) {
+  const query = validate(ticketListQuerySchema, req.query, res);
+  if (!query) return;
+
+  const tickets = await getTickets(query.sortBy, query.sortOrder);
   res.json({ tickets });
 }
 

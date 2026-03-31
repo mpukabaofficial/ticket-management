@@ -1,4 +1,4 @@
-import type { TicketSortableColumn, TicketListQuery } from "shared";
+import type { TicketSortableColumn, TicketListQuery, UpdateTicketInput } from "shared";
 import type { Prisma } from "../generated/prisma/client";
 import prisma from "../config/db";
 
@@ -67,6 +67,23 @@ export async function getTicketById(id: number) {
   }
 
   return ticket;
+}
+
+export async function updateTicket(id: number, data: UpdateTicketInput) {
+  const ticket = await prisma.ticket.findUnique({
+    where: { id },
+    select: { id: true },
+  });
+
+  if (!ticket) {
+    throw new TicketError("Ticket not found", 404);
+  }
+
+  return prisma.ticket.update({
+    where: { id },
+    data,
+    select: ticketWithMessagesSelect,
+  });
 }
 
 export async function createTicketFromEmail(

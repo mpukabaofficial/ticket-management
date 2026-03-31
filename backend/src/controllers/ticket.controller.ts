@@ -1,8 +1,9 @@
 import type { Request, Response } from "express";
-import { inboundEmailSchema, ticketListQuerySchema } from "shared";
+import { inboundEmailSchema, ticketListQuerySchema, updateTicketSchema } from "shared";
 import {
   getTickets,
   getTicketById,
+  updateTicket,
   createTicketFromEmail,
   assignTicket,
 } from "../services/ticket.service";
@@ -24,6 +25,20 @@ export async function showTicket(req: Request, res: Response) {
   }
 
   const ticket = await getTicketById(id);
+  res.json({ ticket });
+}
+
+export async function update(req: Request, res: Response) {
+  const id = Number(req.params.id);
+  if (Number.isNaN(id)) {
+    res.status(400).json({ error: "Invalid ticket ID" });
+    return;
+  }
+
+  const data = validate(updateTicketSchema, req.body, res);
+  if (!data) return;
+
+  const ticket = await updateTicket(id, data);
   res.json({ ticket });
 }
 

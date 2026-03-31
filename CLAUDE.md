@@ -11,7 +11,7 @@ AI-powered ticket management system for an online school. See `project-scope.md`
 - **Auth:** Better Auth with email/password, database sessions
 - **Data Fetching:** Axios + TanStack React Query (QueryClientProvider in main.tsx)
 - **Forms:** React Hook Form + Zod (with `@hookform/resolvers`)
-- **Testing:** Playwright (E2E)
+- **Testing:** Vitest + React Testing Library (component), Playwright (E2E)
 - **Deployment:** Docker + Railway
 
 ## Project Structure
@@ -59,6 +59,11 @@ docker-compose.yml      — Docker services (dev Postgres, test Postgres, backen
 - `cd backend && bun run db:seed` — seed admin user
 - `docker compose up -d` — start Postgres and services
 - `docker compose up -d postgres-test` — start test database only
+- **Component tests:** Vitest + React Testing Library + jsdom (config: `frontend/vitest.config.ts`, setup: `frontend/src/test/setup.ts`)
+- `cd frontend && bun run test` — run component tests (single run)
+- `cd frontend && bun run test:watch` — run component tests in watch mode
+- Component test files live next to their source: `Component.test.tsx` alongside `Component.tsx`
+- Mock axios with `vi.mock("axios")`, wrap components in `QueryClientProvider` with `retry: false`
 - **E2E tests:** Always use the `e2e-test-writer` agent to write Playwright tests — do not write E2E tests directly
 - `cd frontend && bun run test:e2e` — run Playwright E2E tests
 - `cd frontend && bun run test:e2e:ui` — run E2E tests with Playwright UI

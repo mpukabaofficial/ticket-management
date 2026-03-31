@@ -1,4 +1,5 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import axios from "axios";
@@ -138,5 +139,51 @@ describe("Users page", () => {
       expect.stringContaining("/api/users"),
       expect.objectContaining({ withCredentials: true })
     );
+  });
+
+  describe("Create User dialog", () => {
+    it("opens the dialog when 'Create User' button is clicked", async () => {
+      const user = userEvent.setup();
+      mockedAxios.get.mockReturnValue(new Promise(() => {}));
+      renderWithQuery(<Users />);
+
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+
+      await user.click(screen.getByRole("button", { name: /create user/i }));
+
+      expect(screen.getByRole("dialog")).toBeInTheDocument();
+      expect(screen.getByText("Add a new user to the system.")).toBeInTheDocument();
+    });
+
+    it("closes the dialog when pressing Escape", async () => {
+      const user = userEvent.setup();
+      mockedAxios.get.mockReturnValue(new Promise(() => {}));
+      renderWithQuery(<Users />);
+
+      await user.click(screen.getByRole("button", { name: /create user/i }));
+      expect(screen.getByRole("dialog")).toBeInTheDocument();
+
+      await user.keyboard("{Escape}");
+
+      await waitFor(() => {
+        expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+      });
+    });
+
+    it("closes the dialog when clicking the overlay", async () => {
+      const user = userEvent.setup();
+      mockedAxios.get.mockReturnValue(new Promise(() => {}));
+      renderWithQuery(<Users />);
+
+      await user.click(screen.getByRole("button", { name: /create user/i }));
+      expect(screen.getByRole("dialog")).toBeInTheDocument();
+
+      const overlay = document.querySelector("[data-slot='dialog-overlay']")!;
+      await user.click(overlay);
+
+      await waitFor(() => {
+        expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+      });
+    });
   });
 });

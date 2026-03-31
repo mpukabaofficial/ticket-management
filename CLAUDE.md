@@ -135,7 +135,7 @@ docker-compose.yml      — Docker services (dev Postgres, test Postgres, backen
 
 ## Key Patterns
 - **Middleware order in app.ts:** CORS → Helmet → Better Auth handler → `express.json()` → rate limiter → routes → global error handler
-- **Global error handler:** Express 5 auto-forwards async errors to the error handler in `app.ts` — do NOT add try/catch in controllers
+- **Global error handler:** Express 5 auto-forwards async errors to the error handler in `app.ts` — do NOT add try/catch in controllers. Handle domain errors (e.g. `UserError`) in the global error handler, not in individual controllers.
 - **Security:** Helmet for HTTP security headers, express-rate-limit for API rate limiting
 - **Backend architecture:** Controller + service pattern — controllers handle HTTP req/res, services handle Prisma queries
 - **Shared Zod schemas:** Define all Zod validation schemas in the `shared` package (`shared/src/schemas/`), import from `"shared"` in both backend and frontend. Use `zod/v4` for imports in schema files. Export all schemas through `shared/src/index.ts`.

@@ -11,7 +11,7 @@ export const auth = betterAuth({
   disabledPaths: ["/sign-up/email"],
   emailAndPassword: {
     enabled: true,
-    minPasswordLength: 12,
+    minPasswordLength: 8,
   },
   user: {
     additionalFields: {

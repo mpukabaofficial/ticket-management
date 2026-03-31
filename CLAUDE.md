@@ -10,6 +10,8 @@ AI-powered ticket management system for an online school. See `project-scope.md`
 - **Database:** PostgreSQL + Prisma 7 ORM (with `@prisma/adapter-pg` driver adapter)
 - **Auth:** Better Auth with email/password, database sessions
 - **Data Fetching:** Axios + TanStack React Query (QueryClientProvider in main.tsx)
+- **Validation:** Zod 4 — shared schemas in `shared` package, imports use `zod/v4`
+- **Monorepo:** Bun workspaces (`backend`, `frontend`, `shared`)
 - **Forms:** React Hook Form + Zod (with `@hookform/resolvers`)
 - **Testing:** Vitest + React Testing Library (component), Playwright (E2E)
 - **Deployment:** Docker + Railway
@@ -46,6 +48,10 @@ frontend/
     lib/utils.ts        — cn() helper (clsx + tailwind-merge)
     hooks/              — Custom hooks
     services/           — API services
+shared/
+  src/
+    index.ts            — Package entry point (re-exports all schemas)
+    schemas/            — Zod validation schemas shared between backend + frontend
 docker-compose.yml      — Docker services (dev Postgres, test Postgres, backend, frontend)
 ```
 
@@ -132,6 +138,7 @@ docker-compose.yml      — Docker services (dev Postgres, test Postgres, backen
 - **Global error handler:** Express 5 auto-forwards async errors to the error handler in `app.ts` — do NOT add try/catch in controllers
 - **Security:** Helmet for HTTP security headers, express-rate-limit for API rate limiting
 - **Backend architecture:** Controller + service pattern — controllers handle HTTP req/res, services handle Prisma queries
+- **Shared Zod schemas:** Define all Zod validation schemas in the `shared` package (`shared/src/schemas/`), import from `"shared"` in both backend and frontend. Use `zod/v4` for imports in schema files. Export all schemas through `shared/src/index.ts`.
 - Prisma uses the `@prisma/adapter-pg` driver adapter (not the default Prisma engine)
 - **Forms:** React Hook Form + Zod via `zodResolver`, using shadcn `Controller` + `Field` + `FieldLabel` + `Input` + `FieldError` pattern (see Login.tsx for reference)
 - **Import alias:** `@/*` maps to `frontend/src/*` (configured in tsconfig + vite.config.ts)

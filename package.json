@@ -1,6 +1,7 @@
 {
   "name": "ticket-management",
   "private": true,
+  "workspaces": ["backend", "frontend", "shared"],
   "scripts": {
     "dev:backend": "cd backend && bun run dev",
     "dev:frontend": "cd frontend && bun run dev",

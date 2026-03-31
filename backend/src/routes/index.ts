@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { requireAuth, requireRole } from "../middleware/auth";
-import { listUsers } from "../controllers/user.controller";
+import { requireAuth } from "../middleware/auth";
+import userRoutes from "./user.routes";
 
 const router = Router();
 
@@ -13,6 +13,6 @@ router.get("/me", requireAuth, (req, res) => {
   res.json({ user: { id, email, name, role } });
 });
 
-router.get("/users", requireAuth, requireRole("ADMIN"), listUsers);
+router.use("/users", userRoutes);
 
 export default router;

@@ -8,6 +8,7 @@ import {
 } from "@tanstack/react-table";
 import { TicketStatus } from "shared";
 import type { TicketStatusType, TicketCategoryType } from "shared";
+import { Link } from "react-router";
 import {
   RiArrowUpSLine,
   RiArrowDownSLine,
@@ -59,7 +60,12 @@ const columns: ColumnDef<Ticket>[] = [
     accessorKey: "subject",
     header: "Subject",
     cell: ({ row }) => (
-      <span className="font-medium">{row.getValue("subject")}</span>
+      <Link
+        to={`/tickets/${row.original.id}`}
+        className="font-medium"
+      >
+        {row.getValue("subject")}
+      </Link>
     ),
   },
   {

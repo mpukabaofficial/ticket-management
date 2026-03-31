@@ -55,7 +55,7 @@ describe("Users page", () => {
     expect(screen.getByText("Joined")).toBeInTheDocument();
 
     const skeletons = document.querySelectorAll("[data-slot='skeleton']");
-    expect(skeletons.length).toBe(20); // 5 rows × 4 columns
+    expect(skeletons.length).toBe(25); // 5 rows × 5 columns
   });
 
   it("renders user data in the table", async () => {
@@ -139,6 +139,48 @@ describe("Users page", () => {
       expect.stringContaining("/api/users"),
       expect.objectContaining({ withCredentials: true })
     );
+  });
+
+  it("renders edit buttons for each user row", async () => {
+    mockedAxios.get.mockResolvedValue({ data: { users: mockUsers } });
+    renderWithQuery(<Users />);
+
+    await screen.findByText("Admin User");
+
+    expect(screen.getByRole("button", { name: /edit admin user/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /edit agent user/i })).toBeInTheDocument();
+  });
+
+  describe("Edit User dialog", () => {
+    it("opens with user data pre-filled when edit button is clicked", async () => {
+      const user = userEvent.setup();
+      mockedAxios.get.mockResolvedValue({ data: { users: mockUsers } });
+      renderWithQuery(<Users />);
+
+      await screen.findByText("Admin User");
+      await user.click(screen.getByRole("button", { name: /edit admin user/i }));
+
+      expect(screen.getByRole("dialog")).toBeInTheDocument();
+      expect(screen.getByLabelText("Name")).toHaveValue("Admin User");
+      expect(screen.getByLabelText("Email")).toHaveValue("admin@example.com");
+      expect(screen.getByLabelText("Password")).toHaveValue("");
+    });
+
+    it("closes the edit dialog when pressing Escape", async () => {
+      const user = userEvent.setup();
+      mockedAxios.get.mockResolvedValue({ data: { users: mockUsers } });
+      renderWithQuery(<Users />);
+
+      await screen.findByText("Admin User");
+      await user.click(screen.getByRole("button", { name: /edit admin user/i }));
+      expect(screen.getByRole("dialog")).toBeInTheDocument();
+
+      await user.keyboard("{Escape}");
+
+      await waitFor(() => {
+        expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+      });
+    });
   });
 
   describe("Create User dialog", () => {

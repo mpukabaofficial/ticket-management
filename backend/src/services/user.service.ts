@@ -1,15 +1,18 @@
+import { hashPassword } from "better-auth/crypto";
 import prisma from "../config/db";
 import { auth } from "../lib/auth";
 
+const userSelect = {
+  id: true,
+  email: true,
+  name: true,
+  role: true,
+  createdAt: true,
+} as const;
+
 export async function getUsers() {
   return prisma.user.findMany({
-    select: {
-      id: true,
-      email: true,
-      name: true,
-      role: true,
-      createdAt: true,
-    },
+    select: userSelect,
     orderBy: { createdAt: "desc" },
   });
 }
@@ -34,14 +37,39 @@ export async function createUser(
 
   return prisma.user.findUniqueOrThrow({
     where: { id: result.user.id },
-    select: {
-      id: true,
-      email: true,
-      name: true,
-      role: true,
-      createdAt: true,
-    },
+    select: userSelect,
   });
+}
+
+export async function updateUser(
+  id: string,
+  name: string,
+  email: string,
+  password?: string,
+) {
+  const existing = await prisma.user.findUnique({
+    where: { email },
+    select: { id: true },
+  });
+  if (existing && existing.id !== id) {
+    throw new UserError("A user with this email already exists");
+  }
+
+  const user = await prisma.user.update({
+    where: { id },
+    data: { name, email },
+    select: userSelect,
+  });
+
+  if (password) {
+    const hash = await hashPassword(password);
+    await prisma.account.updateMany({
+      where: { userId: id, providerId: "credential" },
+      data: { password: hash },
+    });
+  }
+
+  return user;
 }
 
 export class UserError extends Error {

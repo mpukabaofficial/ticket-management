@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import UsersTable, { type User } from "@/components/UsersTable";
-import CreateUserForm from "@/components/CreateUserForm";
+import UserFormDialog from "@/components/UserFormDialog";
 
 export default function Users() {
   const {
@@ -23,7 +23,7 @@ export default function Users() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-semibold text-foreground">Users</h1>
-        <CreateUserForm />
+        <UserFormDialog mode="create" />
       </div>
 
       {error && (

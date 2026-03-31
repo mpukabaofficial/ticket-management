@@ -12,8 +12,8 @@ export async function listTickets(req: Request, res: Response) {
   const query = validate(ticketListQuerySchema, req.query, res);
   if (!query) return;
 
-  const tickets = await getTickets(query);
-  res.json({ tickets });
+  const result = await getTickets(query);
+  res.json(result);
 }
 
 export async function showTicket(req: Request, res: Response) {

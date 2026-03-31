@@ -40,11 +40,20 @@ export async function getTickets(query: TicketListQuery) {
     ];
   }
 
-  return prisma.ticket.findMany({
-    where,
-    select: ticketSelect,
-    orderBy: { [query.sortBy]: query.sortOrder },
-  });
+  const skip = (query.page - 1) * query.pageSize;
+
+  const [tickets, total] = await Promise.all([
+    prisma.ticket.findMany({
+      where,
+      select: ticketSelect,
+      orderBy: { [query.sortBy]: query.sortOrder },
+      skip,
+      take: query.pageSize,
+    }),
+    prisma.ticket.count({ where }),
+  ]);
+
+  return { tickets, total, page: query.page, pageSize: query.pageSize };
 }
 
 export async function getTicketById(id: number) {

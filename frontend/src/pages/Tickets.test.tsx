@@ -68,7 +68,7 @@ describe("Tickets page", () => {
   });
 
   it("renders ticket data in the table", async () => {
-    mockedAxios.get.mockResolvedValue({ data: { tickets: mockTickets } });
+    mockedAxios.get.mockResolvedValue({ data: { tickets: mockTickets, total: 2, page: 1, pageSize: 20 } });
     renderWithQuery(<Tickets />);
 
     expect(
@@ -84,7 +84,7 @@ describe("Tickets page", () => {
   });
 
   it("shows dash for tickets without category", async () => {
-    mockedAxios.get.mockResolvedValue({ data: { tickets: mockTickets } });
+    mockedAxios.get.mockResolvedValue({ data: { tickets: mockTickets, total: 2, page: 1, pageSize: 20 } });
     renderWithQuery(<Tickets />);
 
     await screen.findByText("Refund request");
@@ -92,7 +92,7 @@ describe("Tickets page", () => {
   });
 
   it("shows empty state when no tickets are returned", async () => {
-    mockedAxios.get.mockResolvedValue({ data: { tickets: [] } });
+    mockedAxios.get.mockResolvedValue({ data: { tickets: [], total: 0, page: 1, pageSize: 20 } });
     renderWithQuery(<Tickets />);
 
     expect(await screen.findByText("No tickets found.")).toBeInTheDocument();
@@ -121,6 +121,8 @@ describe("Tickets page", () => {
           status: undefined,
           category: undefined,
           search: undefined,
+          page: 1,
+          pageSize: 20,
         },
       })
     );

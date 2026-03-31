@@ -18,6 +18,14 @@ export async function getUsers() {
   });
 }
 
+export async function getAgents() {
+  return prisma.user.findMany({
+    where: { deletedAt: null },
+    select: { id: true, name: true },
+    orderBy: { name: "asc" },
+  });
+}
+
 export async function createUser(
   name: string,
   email: string,

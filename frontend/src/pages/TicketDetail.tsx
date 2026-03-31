@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { useParams, Link } from "react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
+import { toast } from "sonner";
 import { TicketStatus } from "shared";
 import type { TicketStatusType, TicketCategoryType } from "shared";
 import { RiArrowLeftLine } from "@remixicon/react";
@@ -10,6 +12,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface Message {
   id: string;
@@ -29,6 +38,11 @@ interface TicketDetail {
   createdAt: string;
   assignedTo: { id: string; name: string } | null;
   messages: Message[];
+}
+
+interface Agent {
+  id: string;
+  name: string;
 }
 
 function statusVariant(status: TicketStatusType) {
@@ -52,8 +66,13 @@ function formatDate(date: string) {
   });
 }
 
+const UNASSIGNED = "__unassigned__";
+
 export default function TicketDetailPage() {
   const { id } = useParams();
+  const queryClient = useQueryClient();
+
+  const [selectedAgent, setSelectedAgent] = useState<string>(UNASSIGNED);
 
   const { data: ticket, isPending, error } = useQuery({
     queryKey: ["ticket", id],
@@ -64,6 +83,37 @@ export default function TicketDetailPage() {
           { withCredentials: true },
         )
         .then((res) => res.data.ticket),
+  });
+
+  const { data: agents } = useQuery({
+    queryKey: ["agents"],
+    queryFn: () =>
+      axios
+        .get<{ agents: Agent[] }>(
+          `${import.meta.env.VITE_API_URL}/api/users/agents`,
+          { withCredentials: true },
+        )
+        .then((res) => res.data.agents),
+  });
+
+  const assignMutation = useMutation({
+    mutationFn: (userId: string) =>
+      axios.patch(
+        `${import.meta.env.VITE_API_URL}/api/tickets/${id}/assign`,
+        { userId },
+        { withCredentials: true },
+      ),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["ticket", id] });
+      queryClient.invalidateQueries({ queryKey: ["tickets"] });
+      toast.success("Ticket assigned");
+    },
+    onError: (err) => {
+      const message = axios.isAxiosError(err)
+        ? err.response?.data?.error || err.message
+        : "Failed to assign ticket";
+      toast.error(message);
+    },
   });
 
   const errorMessage = error
@@ -126,7 +176,40 @@ export default function TicketDetailPage() {
                 </div>
                 <div>
                   <dt className="text-muted-foreground">Assigned to</dt>
-                  <dd>{ticket.assignedTo?.name ?? "Unassigned"}</dd>
+                  <dd className="flex items-center gap-2">
+                    <Select
+                      value={selectedAgent !== UNASSIGNED ? selectedAgent : (ticket.assignedTo?.id ?? UNASSIGNED)}
+                      onValueChange={setSelectedAgent}
+                      disabled={assignMutation.isPending}
+                    >
+                      <SelectTrigger className="w-48">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value={UNASSIGNED} disabled>
+                          Unassigned
+                        </SelectItem>
+                        {agents?.map((agent) => (
+                          <SelectItem key={agent.id} value={agent.id}>
+                            {agent.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {selectedAgent !== UNASSIGNED && selectedAgent !== ticket.assignedTo?.id && (
+                      <Button
+                        size="sm"
+                        disabled={assignMutation.isPending}
+                        onClick={() => {
+                          assignMutation.mutate(selectedAgent, {
+                            onSuccess: () => setSelectedAgent(UNASSIGNED),
+                          });
+                        }}
+                      >
+                        {assignMutation.isPending ? "Assigning..." : "Assign"}
+                      </Button>
+                    )}
+                  </dd>
                 </div>
                 <div>
                   <dt className="text-muted-foreground">Created</dt>

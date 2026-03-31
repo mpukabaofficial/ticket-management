@@ -4,3 +4,4 @@
 - [Playwright config changes](project_playwright_config.md) — VITE_API_URL env injection, reuseExistingServer: false for backend
 - [Better Auth rate limiter behavior](project_better_auth_rate_limiter.md) — in-memory, 3/10s special rule for sign-in, reset on server restart
 - [React type=email input constraint](project_email_input_constraint.md) — Chromium blocks non-email values; React re-renders type back, preventing bypass
+- [Users page selectors and component structure](project_users_page_selectors.md) — selectors, aria-labels, toast messages, and behaviours for /users CRUD

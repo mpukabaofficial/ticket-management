@@ -1,13 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { RiGroupLine } from "@remixicon/react";
 import axios from "axios";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -59,28 +52,28 @@ export default function Users() {
       )}
 
       <Card>
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <RiGroupLine className="size-5 text-muted-foreground" />
-            <CardTitle>Team Members</CardTitle>
-            {users && <Badge variant="secondary">{users.length}</Badge>}
-          </div>
-          <CardDescription>
-            Manage your team members and their roles.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+        <CardContent className="p-0">
           {isPending ? (
-            <div className="space-y-3">
-              {Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="flex items-center gap-4">
-                  <Skeleton className="h-4 w-32" />
-                  <Skeleton className="h-4 w-48" />
-                  <Skeleton className="h-5 w-16" />
-                  <Skeleton className="h-4 w-24" />
-                </div>
-              ))}
-            </div>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Role</TableHead>
+                  <TableHead>Joined</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <TableRow key={i}>
+                    <TableCell><Skeleton className="h-4 w-28" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-44" /></TableCell>
+                    <TableCell><Skeleton className="h-5 w-16 rounded-full" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           ) : users?.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-6">
               No users found.

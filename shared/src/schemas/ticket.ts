@@ -22,9 +22,15 @@ export const ticketSortableColumns = [
 
 export type TicketSortableColumn = (typeof ticketSortableColumns)[number];
 
+export const ticketStatuses = ["OPEN", "RESOLVED", "CLOSED"] as const;
+export const ticketCategories = ["GENERAL", "TECHNICAL", "REFUND"] as const;
+
 export const ticketListQuerySchema = z.object({
   sortBy: z.enum(ticketSortableColumns).default("createdAt"),
   sortOrder: z.enum(["asc", "desc"]).default("desc"),
+  status: z.enum(ticketStatuses).optional(),
+  category: z.enum(ticketCategories).optional(),
+  search: z.string().trim().max(200).optional(),
 });
 
 export type TicketListQuery = z.infer<typeof ticketListQuerySchema>;

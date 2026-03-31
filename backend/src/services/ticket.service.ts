@@ -1,4 +1,5 @@
-import type { TicketSortableColumn } from "shared";
+import type { TicketSortableColumn, TicketListQuery } from "shared";
+import type { Prisma } from "../generated/prisma/client";
 import prisma from "../config/db";
 
 const DUPLICATE_WINDOW_MS = 5 * 60 * 1000; // 5 minutes
@@ -23,13 +24,26 @@ const ticketWithMessagesSelect = {
   },
 };
 
-export async function getTickets(
-  sortBy: TicketSortableColumn = "createdAt",
-  sortOrder: "asc" | "desc" = "desc",
-) {
+export async function getTickets(query: TicketListQuery) {
+  const where: Prisma.TicketWhereInput = {};
+
+  if (query.status) {
+    where.status = query.status;
+  }
+  if (query.category) {
+    where.category = query.category;
+  }
+  if (query.search) {
+    where.OR = [
+      { subject: { contains: query.search, mode: "insensitive" } },
+      { senderName: { contains: query.search, mode: "insensitive" } },
+    ];
+  }
+
   return prisma.ticket.findMany({
+    where,
     select: ticketSelect,
-    orderBy: { [sortBy]: sortOrder },
+    orderBy: { [query.sortBy]: query.sortOrder },
   });
 }
 

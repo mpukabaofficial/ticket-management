@@ -12,7 +12,7 @@ export async function listTickets(req: Request, res: Response) {
   const query = validate(ticketListQuerySchema, req.query, res);
   if (!query) return;
 
-  const tickets = await getTickets(query.sortBy, query.sortOrder);
+  const tickets = await getTickets(query);
   res.json({ tickets });
 }
 

@@ -107,7 +107,7 @@ describe("Tickets page", () => {
     expect(screen.getByText("Failed to fetch tickets")).toBeInTheDocument();
   });
 
-  it("calls the correct API endpoint with credentials and default sort", () => {
+  it("calls the correct API endpoint with credentials and default params", () => {
     mockedAxios.get.mockReturnValue(new Promise(() => {}));
     renderWithQuery(<Tickets />);
 
@@ -115,7 +115,13 @@ describe("Tickets page", () => {
       expect.stringContaining("/api/tickets"),
       expect.objectContaining({
         withCredentials: true,
-        params: { sortBy: "createdAt", sortOrder: "desc" },
+        params: {
+          sortBy: "createdAt",
+          sortOrder: "desc",
+          status: undefined,
+          category: undefined,
+          search: undefined,
+        },
       })
     );
   });

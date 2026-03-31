@@ -1,16 +1,18 @@
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { RiLoaderLine } from "@remixicon/react";
 import { Badge } from "@/components/ui/badge";
+import axios from "axios";
 
 export default function Dashboard() {
-  const [status, setStatus] = useState<string>("checking");
+  const { data, isPending, isError } = useQuery({
+    queryKey: ["health"],
+    queryFn: () =>
+      axios
+        .get(`${import.meta.env.VITE_API_URL}/api/health`)
+        .then((res) => res.data.status as string),
+  });
 
-  useEffect(() => {
-    fetch(`${import.meta.env.VITE_API_URL}/api/health`)
-      .then((res) => res.json())
-      .then((data) => setStatus(data.status))
-      .catch(() => setStatus("unreachable"));
-  }, []);
+  const status = isPending ? "checking" : isError ? "unreachable" : data;
 
   return (
     <div>

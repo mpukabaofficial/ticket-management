@@ -29,28 +29,6 @@ async function loginAsAdmin(page: Page) {
   await page.waitForURL("/");
 }
 
-/**
- * Attempt to submit the login form with a non-email string in the email field,
- * bypassing Chromium's type="email" native constraint.
- *
- * We use page.request to POST directly to the Better Auth endpoint (avoiding
- * the browser UI entirely) because React re-renders the <input type="email">
- * back to its controlled type before any keyboard simulation can persist a
- * non-email value without the browser blocking form submission.
- *
- * For pure UI bypass tests we use this helper; for server-side error tests
- * we send the request directly.
- *
- * NOTE: this function is intentionally unused in the current test suite —
- * it documents the constraint for future test authors.
- */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-async function _forceEmailValue(_page: Page, _value: string) {
-  // Not feasible via Playwright UI: React's controlled type="email" input
-  // is re-rendered on every React update, resetting type back to "email"
-  // and blocking browser-level form submission for non-email values.
-  throw new Error("Not implemented — use page.request for direct API calls");
-}
 
 // ---------------------------------------------------------------------------
 // 1. Login happy path

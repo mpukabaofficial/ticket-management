@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { RiGroupLine } from "@remixicon/react";
+import axios from "axios";
 import {
   Card,
   CardContent,
@@ -28,22 +29,19 @@ interface User {
 }
 
 export default function Users() {
-  const [users, setUsers] = useState<User[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    fetch(`${import.meta.env.VITE_API_URL}/api/users`, {
-      credentials: "include",
-    })
-      .then((res) => {
-        if (!res.ok) throw new Error("Failed to fetch users");
-        return res.json();
-      })
-      .then((data) => setUsers(data.users))
-      .catch((err) => setError(err.message))
-      .finally(() => setIsLoading(false));
-  }, []);
+  const {
+    data: users,
+    isPending,
+    error,
+  } = useQuery({
+    queryKey: ["users"],
+    queryFn: () =>
+      axios
+        .get<{ users: User[] }>(`${import.meta.env.VITE_API_URL}/api/users`, {
+          withCredentials: true,
+        })
+        .then((res) => res.data.users),
+  });
 
   return (
     <div>
@@ -52,7 +50,11 @@ export default function Users() {
       {error && (
         <Alert variant="destructive" className="mb-6">
           <AlertTitle>Error</AlertTitle>
-          <AlertDescription>{error}</AlertDescription>
+          <AlertDescription>
+            {axios.isAxiosError(error)
+              ? error.response?.data?.error || error.message
+              : "Failed to fetch users"}
+          </AlertDescription>
         </Alert>
       )}
 
@@ -61,16 +63,14 @@ export default function Users() {
           <div className="flex items-center gap-2">
             <RiGroupLine className="size-5 text-muted-foreground" />
             <CardTitle>Team Members</CardTitle>
-            {!isLoading && !error && (
-              <Badge variant="secondary">{users.length}</Badge>
-            )}
+            {users && <Badge variant="secondary">{users.length}</Badge>}
           </div>
           <CardDescription>
             Manage your team members and their roles.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {isLoading ? (
+          {isPending ? (
             <div className="space-y-3">
               {Array.from({ length: 3 }).map((_, i) => (
                 <div key={i} className="flex items-center gap-4">
@@ -81,7 +81,7 @@ export default function Users() {
                 </div>
               ))}
             </div>
-          ) : users.length === 0 ? (
+          ) : users?.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-6">
               No users found.
             </p>
@@ -96,7 +96,7 @@ export default function Users() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {users.map((user) => (
+                {users?.map((user) => (
                   <TableRow key={user.id}>
                     <TableCell className="font-medium">{user.name}</TableCell>
                     <TableCell className="text-muted-foreground">

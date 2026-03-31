@@ -9,6 +9,7 @@ AI-powered ticket management system for an online school. See `project-scope.md`
 - **Styling:** Tailwind CSS 4 (`@tailwindcss/vite` plugin) + shadcn/ui (radix-nova style, remixicon)
 - **Database:** PostgreSQL + Prisma 7 ORM (with `@prisma/adapter-pg` driver adapter)
 - **Auth:** Better Auth with email/password, database sessions
+- **Data Fetching:** Axios + TanStack React Query (QueryClientProvider in main.tsx)
 - **Forms:** React Hook Form + Zod (with `@hookform/resolvers`)
 - **Testing:** Playwright (E2E)
 - **Deployment:** Docker + Railway
@@ -23,8 +24,8 @@ backend/
     lib/auth.ts         — Better Auth configuration
     middleware/auth.ts   — Auth middleware for protected routes
     routes/index.ts     — API route definitions
-    controllers/        — Route handlers (empty, in progress)
-    services/           — Business logic (empty, in progress)
+    controllers/        — Route handlers (user.controller.ts)
+    services/           — Business logic (user.service.ts)
     types/express.d.ts  — Express type augmentation
   prisma/
     schema.prisma       — Database schema (includes Better Auth tables + role field)
@@ -39,12 +40,12 @@ frontend/
     index.css           — Tailwind imports + shadcn theme variables
     pages/              — Login, Dashboard, Users, NotFound
     components/         — PrivateRoute (auth guard), AdminRoute (role guard)
-    components/ui/      — shadcn/ui components (alert, badge, button, card, field, input, label, separator, skeleton, sonner)
+    components/ui/      — shadcn/ui components (alert, badge, button, card, field, input, label, separator, skeleton, sonner, table)
     layouts/            — MainLayout (navbar + sign-out)
     lib/auth-client.ts  — Better Auth client instance
     lib/utils.ts        — cn() helper (clsx + tailwind-merge)
-    hooks/              — Custom hooks (empty, in progress)
-    services/           — API services (empty, in progress)
+    hooks/              — Custom hooks
+    services/           — API services
 docker-compose.yml      — Docker services (dev Postgres, test Postgres, backend, frontend)
 ```
 
@@ -118,11 +119,14 @@ docker-compose.yml      — Docker services (dev Postgres, test Postgres, backen
 ## API Routes
 - `GET /api/health` — public, returns `{ status: "ok" }`
 - `GET /api/me` — protected (`requireAuth`), returns `{ user: req.user }`
+- `GET /api/users` — admin only (`requireAuth` + `requireRole("ADMIN")`), returns `{ users }`
 - `/api/auth/*` — Better Auth endpoints (sign-in, sign-out, session, etc.)
 
 ## Key Patterns
-- **Middleware order in app.ts:** CORS → Helmet → Better Auth handler → `express.json()` → rate limiter → routes
+- **Middleware order in app.ts:** CORS → Helmet → Better Auth handler → `express.json()` → rate limiter → routes → global error handler
+- **Global error handler:** Express 5 auto-forwards async errors to the error handler in `app.ts` — do NOT add try/catch in controllers
 - **Security:** Helmet for HTTP security headers, express-rate-limit for API rate limiting
+- **Backend architecture:** Controller + service pattern — controllers handle HTTP req/res, services handle Prisma queries
 - Prisma uses the `@prisma/adapter-pg` driver adapter (not the default Prisma engine)
 - **Forms:** React Hook Form + Zod via `zodResolver`, using shadcn `Controller` + `Field` + `FieldLabel` + `Input` + `FieldError` pattern (see Login.tsx for reference)
 - **Import alias:** `@/*` maps to `frontend/src/*` (configured in tsconfig + vite.config.ts)
@@ -133,6 +137,7 @@ docker-compose.yml      — Docker services (dev Postgres, test Postgres, backen
 - **Toasts:** `<Toaster />` from sonner is mounted in App.tsx — use `toast()` from `sonner` for notifications
 - **Loading states:** Use `<RiLoaderLine className="animate-spin" />` for spinners, `<Skeleton />` for content placeholders
 - **Always use shadcn components** (Button, Input, Card, Alert, Badge, Field, etc.) instead of raw HTML elements
+- **Data fetching:** Always use Axios for HTTP requests + TanStack React Query (`useQuery`/`useMutation`) for state management — never use raw `fetch` or manual `useState`/`useEffect` for API calls
 - Backend uses ES modules (`"type": "module"`) with direct TypeScript execution via Bun (no build step)
 
 ## Docker

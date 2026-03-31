@@ -8,6 +8,7 @@ const userSelect = {
   name: true,
   role: true,
   createdAt: true,
+  deletedAt: true,
 } as const;
 
 export async function getUsers() {
@@ -70,6 +71,40 @@ export async function updateUser(
   }
 
   return user;
+}
+
+export async function softDeleteUser(id: string, currentUserId: string) {
+  if (id === currentUserId) {
+    throw new UserError("Cannot delete yourself");
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { id },
+    select: { id: true, role: true, deletedAt: true },
+  });
+
+  if (!user) {
+    throw new UserError("User not found");
+  }
+
+  if (user.role === "ADMIN") {
+    throw new UserError("Cannot delete an admin user");
+  }
+
+  if (user.deletedAt) {
+    throw new UserError("User is already deleted");
+  }
+
+  const [updatedUser] = await prisma.$transaction([
+    prisma.user.update({
+      where: { id },
+      data: { deletedAt: new Date() },
+      select: userSelect,
+    }),
+    prisma.session.deleteMany({ where: { userId: id } }),
+  ]);
+
+  return updatedUser;
 }
 
 export class UserError extends Error {

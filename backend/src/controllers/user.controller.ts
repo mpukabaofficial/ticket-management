@@ -5,6 +5,7 @@ import {
   getUsers,
   createUser as createUserService,
   updateUser as updateUserService,
+  softDeleteUser,
 } from "../services/user.service";
 
 function validate<T extends z.ZodType>(schema: T, data: unknown, res: Response) {
@@ -36,5 +37,12 @@ export async function updateUser(req: Request, res: Response) {
 
   const id = req.params.id as string;
   const user = await updateUserService(id, data.name, data.email, data.password);
+  res.json({ user });
+}
+
+export async function deleteUser(req: Request, res: Response) {
+  const id = req.params.id as string;
+  const currentUserId = req.user!.id;
+  const user = await softDeleteUser(id, currentUserId);
   res.json({ user });
 }

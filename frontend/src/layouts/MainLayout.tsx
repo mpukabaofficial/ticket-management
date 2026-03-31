@@ -1,4 +1,5 @@
 import { Link, Outlet, useNavigate } from "react-router";
+import { Role } from "shared";
 import { authClient } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 
@@ -26,7 +27,7 @@ export default function MainLayout() {
               <Button variant="ghost" size="sm" asChild>
                 <Link to="/">Dashboard</Link>
               </Button>
-              {session.user.role === "ADMIN" && (
+              {session.user.role === Role.ADMIN && (
                 <Button variant="ghost" size="sm" asChild>
                   <Link to="/users">Users</Link>
                 </Button>

@@ -68,6 +68,7 @@ docker-compose.yml      — Docker services (dev Postgres, test Postgres, backen
 - **Component tests:** Vitest + React Testing Library + jsdom (config: `frontend/vitest.config.ts`, setup: `frontend/src/test/setup.ts`)
 - `cd frontend && bun run test` — run component tests (single run)
 - `cd frontend && bun run test:watch` — run component tests in watch mode
+- **Always write unit tests** for new features and components unless explicitly told not to
 - Component test files live next to their source: `Component.test.tsx` alongside `Component.tsx`
 - Mock axios with `vi.mock("axios")`, wrap components in `QueryClientProvider` with `retry: false`
 - **E2E tests:** Always use the `e2e-test-writer` agent to write Playwright tests — do not write E2E tests directly
@@ -139,6 +140,7 @@ docker-compose.yml      — Docker services (dev Postgres, test Postgres, backen
 - **Security:** Helmet for HTTP security headers, express-rate-limit for API rate limiting
 - **Backend architecture:** Controller + service pattern — controllers handle HTTP req/res, services handle Prisma queries
 - **Shared Zod schemas:** Define all Zod validation schemas in the `shared` package (`shared/src/schemas/`), import from `"shared"` in both backend and frontend. Use `zod/v4` for imports in schema files. Export all schemas through `shared/src/index.ts`.
+- **Shared enums/constants:** Use the `Role` enum from `shared/src/constants/role.ts` (imported via `"shared"`) instead of magic strings like `"ADMIN"` or `"AGENT"` in frontend code. Define all shared enums in `shared/src/constants/`.
 - Prisma uses the `@prisma/adapter-pg` driver adapter (not the default Prisma engine)
 - **Forms:** React Hook Form + Zod via `zodResolver`, using shadcn `Controller` + `Field` + `FieldLabel` + `Input` + `FieldError` pattern (see Login.tsx for reference)
 - **Import alias:** `@/*` maps to `frontend/src/*` (configured in tsconfig + vite.config.ts)

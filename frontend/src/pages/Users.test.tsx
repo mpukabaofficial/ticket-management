@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import axios from "axios";
+import { Role } from "shared";
 import Users from "./Users";
 
 vi.mock("axios");
@@ -22,15 +23,29 @@ const mockUsers = [
     id: "1",
     email: "admin@example.com",
     name: "Admin User",
-    role: "ADMIN" as const,
+    role: Role.ADMIN,
     createdAt: "2025-01-15T10:00:00.000Z",
+    deletedAt: null,
   },
   {
     id: "2",
     email: "agent@example.com",
     name: "Agent User",
-    role: "AGENT" as const,
+    role: Role.AGENT,
     createdAt: "2025-02-20T14:30:00.000Z",
+    deletedAt: null,
+  },
+];
+
+const mockUsersWithDeleted = [
+  ...mockUsers,
+  {
+    id: "3",
+    email: "deleted@example.com",
+    name: "Deleted User",
+    role: Role.AGENT,
+    createdAt: "2025-03-01T10:00:00.000Z",
+    deletedAt: "2025-03-15T10:00:00.000Z",
   },
 ];
 
@@ -90,8 +105,9 @@ describe("Users page", () => {
             id: "1",
             email: "test@example.com",
             name: "Test",
-            role: "AGENT",
+            role: Role.AGENT,
             createdAt: "2025-06-15T00:00:00.000Z",
+            deletedAt: null,
           },
         ],
       },
@@ -180,6 +196,95 @@ describe("Users page", () => {
       await waitFor(() => {
         expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
       });
+    });
+  });
+
+  describe("Delete User", () => {
+    it("shows delete button for agent users but not admin users", async () => {
+      mockedAxios.get.mockResolvedValue({ data: { users: mockUsers } });
+      renderWithQuery(<Users />);
+
+      await screen.findByText("Admin User");
+
+      expect(screen.queryByRole("button", { name: /delete admin user/i })).not.toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /delete agent user/i })).toBeInTheDocument();
+    });
+
+    it("hides delete button for deleted users", async () => {
+      const user = userEvent.setup();
+      mockedAxios.get.mockResolvedValue({ data: { users: mockUsersWithDeleted } });
+      renderWithQuery(<Users />);
+
+      await screen.findByText("Admin User");
+
+      // Enable show deleted toggle
+      await user.click(screen.getByLabelText(/show deleted/i));
+
+      expect(screen.getByText("Deleted User")).toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: /delete deleted user/i })).not.toBeInTheDocument();
+    });
+
+    it("opens confirmation dialog when delete is clicked", async () => {
+      const user = userEvent.setup();
+      mockedAxios.get.mockResolvedValue({ data: { users: mockUsers } });
+      renderWithQuery(<Users />);
+
+      await screen.findByText("Agent User");
+      await user.click(screen.getByRole("button", { name: /delete agent user/i }));
+
+      expect(screen.getByRole("alertdialog")).toBeInTheDocument();
+      expect(screen.getByText(/are you sure you want to delete/i)).toBeInTheDocument();
+    });
+
+    it("calls DELETE API on confirm", async () => {
+      const user = userEvent.setup();
+      mockedAxios.get.mockResolvedValue({ data: { users: mockUsers } });
+      mockedAxios.delete.mockResolvedValue({ data: { user: mockUsers[1] } });
+      renderWithQuery(<Users />);
+
+      await screen.findByText("Agent User");
+      await user.click(screen.getByRole("button", { name: /delete agent user/i }));
+      await user.click(screen.getByRole("button", { name: /^delete$/i }));
+
+      await waitFor(() => {
+        expect(mockedAxios.delete).toHaveBeenCalledWith(
+          expect.stringContaining("/api/users/2"),
+          expect.objectContaining({ withCredentials: true })
+        );
+      });
+    });
+  });
+
+  describe("Show deleted toggle", () => {
+    it("hides deleted users by default", async () => {
+      mockedAxios.get.mockResolvedValue({ data: { users: mockUsersWithDeleted } });
+      renderWithQuery(<Users />);
+
+      await screen.findByText("Admin User");
+
+      expect(screen.queryByText("Deleted User")).not.toBeInTheDocument();
+    });
+
+    it("shows deleted users when toggle is checked", async () => {
+      const user = userEvent.setup();
+      mockedAxios.get.mockResolvedValue({ data: { users: mockUsersWithDeleted } });
+      renderWithQuery(<Users />);
+
+      await screen.findByText("Admin User");
+      await user.click(screen.getByLabelText(/show deleted/i));
+
+      expect(screen.getByText("Deleted User")).toBeInTheDocument();
+    });
+
+    it("shows Deleted badge for soft-deleted users", async () => {
+      const user = userEvent.setup();
+      mockedAxios.get.mockResolvedValue({ data: { users: mockUsersWithDeleted } });
+      renderWithQuery(<Users />);
+
+      await screen.findByText("Admin User");
+      await user.click(screen.getByLabelText(/show deleted/i));
+
+      expect(screen.getByText("Deleted")).toBeInTheDocument();
     });
   });
 

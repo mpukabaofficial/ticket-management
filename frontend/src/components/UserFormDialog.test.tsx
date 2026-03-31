@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import axios from "axios";
+import { Role } from "shared";
 import UserFormDialog from "./UserFormDialog";
 import type { User } from "./UsersTable";
 
@@ -25,8 +26,9 @@ const mockUser: User = {
   id: "1",
   email: "admin@example.com",
   name: "Admin User",
-  role: "ADMIN",
+  role: Role.ADMIN,
   createdAt: "2025-01-15T10:00:00.000Z",
+  deletedAt: null,
 };
 
 beforeEach(() => {

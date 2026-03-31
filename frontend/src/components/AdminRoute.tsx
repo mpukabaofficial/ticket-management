@@ -1,5 +1,6 @@
 import { Navigate, Outlet } from "react-router";
 import { RiLoaderLine } from "@remixicon/react";
+import { Role } from "shared";
 import { authClient } from "@/lib/auth-client";
 
 export default function AdminRoute() {
@@ -14,7 +15,7 @@ export default function AdminRoute() {
     );
   }
 
-  if (session?.user.role !== "ADMIN") {
+  if (session?.user.role !== Role.ADMIN) {
     return <Navigate to="/" replace />;
   }
 

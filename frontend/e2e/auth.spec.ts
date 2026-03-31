@@ -7,6 +7,7 @@
  */
 
 import { test, expect, type Page } from "@playwright/test";
+import { BACKEND_URL } from "./constants";
 
 // Run all auth tests serially to avoid hitting the Better Auth rate limiter
 // when multiple workers send login requests at the same time.
@@ -289,7 +290,7 @@ test.describe("Admin route guard", () => {
     // we cannot test the AdminRoute redirect to "/" with a real AGENT session
     // in these tests — but we validate the guard at the code level below.
     const res = await page.request.post(
-      "http://localhost:3001/api/auth/sign-up/email",
+      `${BACKEND_URL}/api/auth/sign-up/email`,
       {
         data: {
           email: "agent@example.com",
@@ -383,7 +384,7 @@ test.describe("Edge cases", () => {
     // the UI level, but we also want to verify the backend itself rejects them.
     // Send the payload directly via page.request to bypass the browser UI.
     const res = await page.request.post(
-      "http://localhost:3001/api/auth/sign-in/email",
+      `${BACKEND_URL}/api/auth/sign-in/email`,
       {
         data: {
           email: "' OR '1'='1'; DROP TABLE users;--",
@@ -427,7 +428,7 @@ test.describe("Edge cases", () => {
     // We also verify the backend handles an oversized email without crashing.
     const longEmail = "a".repeat(500) + "@example.com";
     const res = await page.request.post(
-      "http://localhost:3001/api/auth/sign-in/email",
+      `${BACKEND_URL}/api/auth/sign-in/email`,
       {
         data: { email: longEmail, password: "somepassword123!" },
         headers: { "Content-Type": "application/json" },

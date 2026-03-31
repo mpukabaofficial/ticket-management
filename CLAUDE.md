@@ -76,6 +76,8 @@ docker-compose.yml      — Docker services (dev Postgres, test Postgres, backen
 - Component test files live next to their source: `Component.test.tsx` alongside `Component.tsx`
 - Mock axios with `vi.mock("axios")`, wrap components in `QueryClientProvider` with `retry: false`
 - **E2E tests:** Always use the `e2e-test-writer` agent to write Playwright tests — do not write E2E tests directly
+- **E2E vs unit test boundary:** E2E tests should only cover behaviour that requires a running backend and database (e.g., ticket creation happy path, duplicate detection across requests, auth flows). Schema/validation logic (trimming, max length, missing fields, invalid input) must be covered by unit tests instead — do not duplicate these in E2E.
+- **E2E backend URL:** Use `BACKEND_URL` from `frontend/e2e/constants.ts` — never hardcode `localhost:3001` in test files. The port is configured in `playwright.config.ts` via `BACKEND_PORT`.
 - `cd frontend && bun run test:e2e` — run Playwright E2E tests
 - `cd frontend && bun run test:e2e:ui` — run E2E tests with Playwright UI
 - `bun run build` — full build pipeline (tests → typecheck → lint → build)

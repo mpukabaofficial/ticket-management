@@ -14,3 +14,10 @@ export const TicketCategory = {
 
 export type TicketCategory =
   (typeof TicketCategory)[keyof typeof TicketCategory];
+
+export const SenderType = {
+  CUSTOMER: "CUSTOMER",
+  AGENT: "AGENT",
+} as const;
+
+export type SenderType = (typeof SenderType)[keyof typeof SenderType];

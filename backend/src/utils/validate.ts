@@ -14,3 +14,12 @@ export function validate<T extends z.ZodType>(
   }
   return result.data as z.infer<T>;
 }
+
+export function parseIntParam(value: unknown, res: Response, name = "ID") {
+  const num = Number(value);
+  if (!Number.isInteger(num) || num < 1) {
+    res.status(400).json({ error: `Invalid ${name}` });
+    return null;
+  }
+  return num;
+}

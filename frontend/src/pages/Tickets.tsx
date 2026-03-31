@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import type { SortingState } from "@tanstack/react-table";
 import { Card, CardContent } from "@/components/ui/card";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { ErrorAlert } from "@/components/ErrorAlert";
 import { Button } from "@/components/ui/button";
 import TicketFilters, { ALL } from "@/components/TicketFilters";
 import TicketsTable from "@/components/TicketsTable";
@@ -85,12 +85,7 @@ export default function Tickets() {
     <div>
       <h1 className="text-2xl font-semibold text-foreground mb-6">Tickets</h1>
 
-      {errorMessage && (
-        <Alert variant="destructive" className="mb-6">
-          <AlertTitle>Error</AlertTitle>
-          <AlertDescription>{errorMessage}</AlertDescription>
-        </Alert>
-      )}
+      <ErrorAlert message={errorMessage} className="mb-6" />
 
       <TicketFilters
         statusFilter={statusFilter}

@@ -8,11 +8,11 @@ import { authClient } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { ErrorAlert } from "@/components/ErrorAlert";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 
 const loginSchema = z.object({
-  email: z.string().min(1, "Email is required").email("Invalid email address"),
+  email: z.email("Invalid email address").min(1, "Email is required"),
   password: z.string().min(1, "Password is required"),
 });
 
@@ -61,11 +61,7 @@ export default function Login() {
         <CardContent>
           <form onSubmit={form.handleSubmit(onSubmit)}>
             <FieldGroup>
-              {serverError && (
-                <Alert variant="destructive">
-                  <AlertDescription>{serverError}</AlertDescription>
-                </Alert>
-              )}
+              <ErrorAlert message={serverError} />
 
               <Controller
                 name="email"

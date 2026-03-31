@@ -1,4 +1,5 @@
-import type { TicketSortableColumn, TicketListQuery, UpdateTicketInput } from "shared";
+import type { TicketSortableColumn, TicketListQuery, UpdateTicketInput, SenderTypeValue } from "shared";
+import { SenderType } from "shared";
 import type { Prisma } from "../generated/prisma/client";
 import prisma from "../config/db";
 
@@ -19,7 +20,7 @@ const ticketSelect = {
 const ticketWithMessagesSelect = {
   ...ticketSelect,
   messages: {
-    select: { id: true, body: true, sender: true, createdAt: true },
+    select: { id: true, body: true, sender: true, senderType: true, createdAt: true },
     orderBy: { createdAt: "asc" as const },
   },
 };
@@ -86,12 +87,46 @@ export async function updateTicket(id: number, data: UpdateTicketInput) {
   });
 }
 
-export async function createTicketFromEmail(
+function stripReplyPrefixes(subject: string): string {
+  return subject.replace(/^(Re|Fwd|Fw)\s*:\s*/gi, "").trim();
+}
+
+export async function handleInboundEmail(
   from: string,
   senderName: string,
   subject: string,
   body: string,
 ) {
+  // Check if this is a reply to an existing open ticket from the same sender
+  const normalizedSubject = stripReplyPrefixes(subject);
+
+  const existingTicket = await prisma.ticket.findFirst({
+    where: {
+      senderEmail: from,
+      subject: normalizedSubject,
+      status: { not: "CLOSED" },
+    },
+    orderBy: { createdAt: "desc" },
+    select: { id: true },
+  });
+
+  if (existingTicket) {
+    await prisma.message.create({
+      data: {
+        body,
+        sender: senderName,
+        senderType: SenderType.CUSTOMER,
+        ticketId: existingTicket.id,
+      },
+    });
+
+    return (await prisma.ticket.findUnique({
+      where: { id: existingTicket.id },
+      select: ticketWithMessagesSelect,
+    }))!;
+  }
+
+  // Otherwise create a new ticket
   const duplicateSince = new Date(Date.now() - DUPLICATE_WINDOW_MS);
   const existing = await prisma.ticket.findFirst({
     where: {
@@ -119,6 +154,7 @@ export async function createTicketFromEmail(
         create: {
           body,
           sender: senderName,
+          senderType: SenderType.CUSTOMER,
         },
       },
     },
@@ -153,6 +189,28 @@ export async function assignTicket(ticketId: number, userId: string) {
     where: { id: ticketId },
     data: { assignedToId: userId },
     select: ticketSelect,
+  });
+}
+
+export async function addMessage(
+  ticketId: number,
+  body: string,
+  sender: string,
+  userId: string,
+  senderType: SenderTypeValue,
+) {
+  const ticket = await prisma.ticket.findUnique({
+    where: { id: ticketId },
+    select: { id: true },
+  });
+
+  if (!ticket) {
+    throw new TicketError("Ticket not found", 404);
+  }
+
+  return prisma.message.create({
+    data: { body, sender, senderType, userId, ticketId },
+    select: { id: true, body: true, sender: true, senderType: true, createdAt: true },
   });
 }
 

@@ -6,10 +6,11 @@ export {
 } from "./schemas/user";
 export { Role } from "./constants/role";
 export type { Role as RoleType } from "./constants/role";
-export { TicketStatus, TicketCategory } from "./constants/ticket";
+export { TicketStatus, TicketCategory, SenderType } from "./constants/ticket";
 export type {
   TicketStatus as TicketStatusType,
   TicketCategory as TicketCategoryType,
+  SenderType as SenderTypeValue,
 } from "./constants/ticket";
 export {
   inboundEmailSchema,
@@ -18,4 +19,8 @@ export {
   type TicketSortableColumn,
   ticketListQuerySchema,
   type TicketListQuery,
+  updateTicketSchema,
+  type UpdateTicketInput,
+  createMessageSchema,
+  type CreateMessageInput,
 } from "./schemas/ticket";

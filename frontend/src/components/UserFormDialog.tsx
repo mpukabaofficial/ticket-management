@@ -6,7 +6,7 @@ import axios from "axios";
 import { createUserSchema, editUserSchema } from "shared";
 import { RiLoaderLine, RiAddLine } from "@remixicon/react";
 import { toast } from "sonner";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { ErrorAlert } from "@/components/ErrorAlert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -135,11 +135,7 @@ export default function UserFormDialog(props: UserFormDialogProps) {
       </DialogHeader>
       <form autoComplete="off" onSubmit={form.handleSubmit(onSubmit)}>
         <FieldGroup>
-          {serverError && (
-            <Alert variant="destructive">
-              <AlertDescription>{serverError}</AlertDescription>
-            </Alert>
-          )}
+          <ErrorAlert message={serverError} />
 
           <Controller
             name="name"

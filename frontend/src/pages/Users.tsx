@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { ErrorAlert } from "@/components/ErrorAlert";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import UsersTable, { type User } from "@/components/UsersTable";
@@ -52,12 +52,7 @@ export default function Users() {
         </div>
       </div>
 
-      {errorMessage && (
-        <Alert variant="destructive" className="mb-6">
-          <AlertTitle>Error</AlertTitle>
-          <AlertDescription>{errorMessage}</AlertDescription>
-        </Alert>
-      )}
+      <ErrorAlert message={errorMessage} className="mb-6" />
 
       <UsersTable users={users} isPending={isPending} showDeleted={showDeleted} />
     </div>

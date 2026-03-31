@@ -24,6 +24,11 @@ enum TicketCategory {
   REFUND
 }
 
+enum SenderType {
+  CUSTOMER
+  AGENT
+}
+
 model User {
   id            String   @id
   email         String   @unique
@@ -97,10 +102,11 @@ model Ticket {
 }
 
 model Message {
-  id        String   @id @default(uuid())
-  body      String
-  sender    String
-  createdAt DateTime @default(now())
+  id         String     @id @default(uuid())
+  body       String
+  sender     String
+  senderType SenderType
+  createdAt  DateTime   @default(now())
 
   ticketId Int
   ticket   Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)

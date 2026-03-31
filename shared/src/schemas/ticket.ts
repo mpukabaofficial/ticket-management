@@ -36,3 +36,16 @@ export const ticketListQuerySchema = z.object({
 });
 
 export type TicketListQuery = z.infer<typeof ticketListQuerySchema>;
+
+export const updateTicketSchema = z.object({
+  status: z.enum(ticketStatuses).optional(),
+  category: z.enum(ticketCategories).optional(),
+});
+
+export type UpdateTicketInput = z.infer<typeof updateTicketSchema>;
+
+export const createMessageSchema = z.object({
+  body: z.string().trim().min(1, "Message body is required").max(50000, "Message too long"),
+});
+
+export type CreateMessageInput = z.infer<typeof createMessageSchema>;

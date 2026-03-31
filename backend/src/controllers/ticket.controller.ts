@@ -1,13 +1,14 @@
 import type { Request, Response } from "express";
-import { inboundEmailSchema, ticketListQuerySchema, updateTicketSchema } from "shared";
+import { inboundEmailSchema, ticketListQuerySchema, updateTicketSchema, createMessageSchema, SenderType } from "shared";
 import {
   getTickets,
   getTicketById,
   updateTicket,
-  createTicketFromEmail,
+  handleInboundEmail,
   assignTicket,
+  addMessage,
 } from "../services/ticket.service";
-import { validate } from "../utils/validate";
+import { validate, parseIntParam } from "../utils/validate";
 
 export async function listTickets(req: Request, res: Response) {
   const query = validate(ticketListQuerySchema, req.query, res);
@@ -18,22 +19,16 @@ export async function listTickets(req: Request, res: Response) {
 }
 
 export async function showTicket(req: Request, res: Response) {
-  const id = Number(req.params.id);
-  if (Number.isNaN(id)) {
-    res.status(400).json({ error: "Invalid ticket ID" });
-    return;
-  }
+  const id = parseIntParam(req.params.id, res, "ticket ID");
+  if (!id) return;
 
   const ticket = await getTicketById(id);
   res.json({ ticket });
 }
 
 export async function update(req: Request, res: Response) {
-  const id = Number(req.params.id);
-  if (Number.isNaN(id)) {
-    res.status(400).json({ error: "Invalid ticket ID" });
-    return;
-  }
+  const id = parseIntParam(req.params.id, res, "ticket ID");
+  if (!id) return;
 
   const data = validate(updateTicketSchema, req.body, res);
   if (!data) return;
@@ -46,7 +41,7 @@ export async function createFromEmail(req: Request, res: Response) {
   const data = validate(inboundEmailSchema, req.body, res);
   if (!data) return;
 
-  const ticket = await createTicketFromEmail(
+  const ticket = await handleInboundEmail(
     data.from,
     data.senderName,
     data.subject,
@@ -56,11 +51,8 @@ export async function createFromEmail(req: Request, res: Response) {
 }
 
 export async function assign(req: Request, res: Response) {
-  const id = Number(req.params.id);
-  if (Number.isNaN(id)) {
-    res.status(400).json({ error: "Invalid ticket ID" });
-    return;
-  }
+  const id = parseIntParam(req.params.id, res, "ticket ID");
+  if (!id) return;
 
   const { userId } = req.body;
   if (!userId || typeof userId !== "string") {
@@ -70,4 +62,16 @@ export async function assign(req: Request, res: Response) {
 
   const ticket = await assignTicket(id, userId);
   res.json({ ticket });
+}
+
+export async function createMessage(req: Request, res: Response) {
+  const id = parseIntParam(req.params.id, res, "ticket ID");
+  if (!id) return;
+
+  const data = validate(createMessageSchema, req.body, res);
+  if (!data) return;
+
+  const user = req.user!;
+  const message = await addMessage(id, data.body, user.name, user.id, SenderType.AGENT);
+  res.status(201).json({ message });
 }

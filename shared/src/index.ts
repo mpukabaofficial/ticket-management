@@ -12,6 +12,7 @@ export type {
   TicketCategory as TicketCategoryType,
   SenderType as SenderTypeValue,
 } from "./constants/ticket";
+export type { Ticket, TicketWithMessages, Message } from "./types/ticket";
 export {
   inboundEmailSchema,
   type InboundEmailInput,

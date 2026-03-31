@@ -2,7 +2,7 @@ import { SenderType } from "shared";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import type { Ticket } from "@/types/ticket";
+import type { TicketWithMessages } from "@/types/ticket";
 
 function formatDate(date: string) {
   return new Date(date).toLocaleDateString(undefined, {
@@ -19,7 +19,7 @@ function capitalize(value: string) {
 }
 
 interface TicketMessagesProps {
-  messages: Ticket["messages"];
+  messages: TicketWithMessages["messages"];
 }
 
 export default function TicketMessages({ messages }: TicketMessagesProps) {

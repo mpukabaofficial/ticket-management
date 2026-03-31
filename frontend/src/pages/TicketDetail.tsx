@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import TicketMessages from "@/components/TicketMessages";
 import TicketReplyForm from "@/components/TicketReplyForm";
 import TicketDetailsSidebar from "@/components/TicketDetailsSidebar";
-import type { Ticket } from "@/types/ticket";
+import type { TicketWithMessages } from "@/types/ticket";
 
 function formatDate(date: string) {
   return new Date(date).toLocaleDateString(undefined, {
@@ -28,7 +28,7 @@ export default function TicketDetailPage() {
     queryKey: ["ticket", id],
     queryFn: () =>
       axios
-        .get<{ ticket: Ticket }>(
+        .get<{ ticket: TicketWithMessages }>(
           `${import.meta.env.VITE_API_URL}/api/tickets/${id}`,
           { withCredentials: true },
         )

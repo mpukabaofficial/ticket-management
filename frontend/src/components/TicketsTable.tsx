@@ -7,7 +7,7 @@ import {
   type OnChangeFn,
 } from "@tanstack/react-table";
 import { TicketStatus } from "shared";
-import type { TicketStatusType, TicketCategoryType } from "shared";
+import type { TicketStatusType } from "shared";
 import { Link } from "react-router";
 import {
   RiArrowUpSLine,
@@ -24,18 +24,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-
-export interface Ticket {
-  id: number;
-  subject: string;
-  body: string;
-  status: TicketStatusType;
-  category: TicketCategoryType | null;
-  senderEmail: string;
-  senderName: string;
-  createdAt: string;
-  assignedTo: { id: string; name: string } | null;
-}
+import type { Ticket } from "@/types/ticket";
 
 function statusVariant(status: TicketStatusType) {
   switch (status) {

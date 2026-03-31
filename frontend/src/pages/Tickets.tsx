@@ -4,10 +4,10 @@ import axios from "axios";
 import type { SortingState } from "@tanstack/react-table";
 import { Card, CardContent } from "@/components/ui/card";
 import { ErrorAlert } from "@/components/ErrorAlert";
-import { Button } from "@/components/ui/button";
 import TicketFilters, { ALL } from "@/components/TicketFilters";
+import Pagination from "@/components/Pagination";
 import TicketsTable from "@/components/TicketsTable";
-import type { Ticket } from "@/components/TicketsTable";
+import type { Ticket } from "@/types/ticket";
 import { useDebounce } from "@/hooks/useDebounce";
 
 const PAGE_SIZE = 10;
@@ -59,7 +59,6 @@ export default function Tickets() {
 
   const tickets = data?.tickets;
   const total = data?.total ?? 0;
-  const totalPages = Math.ceil(total / PAGE_SIZE);
 
   // Reset to page 1 when filters change
   function handleStatusChange(value: string) {
@@ -107,35 +106,12 @@ export default function Tickets() {
         </CardContent>
       </Card>
 
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between mt-4">
-          <p className="text-sm text-muted-foreground">
-            Showing {(page - 1) * PAGE_SIZE + 1}–
-            {Math.min(page * PAGE_SIZE, total)} of {total}
-          </p>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={page <= 1}
-              onClick={() => setPage((p) => p - 1)}
-            >
-              Previous
-            </Button>
-            <span className="text-sm text-muted-foreground">
-              Page {page} of {totalPages}
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={page >= totalPages}
-              onClick={() => setPage((p) => p + 1)}
-            >
-              Next
-            </Button>
-          </div>
-        </div>
-      )}
+      <Pagination
+        page={page}
+        pageSize={PAGE_SIZE}
+        total={total}
+        onPageChange={setPage}
+      />
     </div>
   );
 }

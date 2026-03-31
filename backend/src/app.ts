@@ -7,6 +7,7 @@ import { config } from "./config";
 import { auth } from "./lib/auth";
 import routes from "./routes";
 import { UserError } from "./services/user.service";
+import { TicketError } from "./services/ticket.service";
 
 const app = express();
 
@@ -48,6 +49,11 @@ app.use(
   ) => {
     if (err instanceof UserError) {
       res.status(409).json({ error: err.message });
+      return;
+    }
+
+    if (err instanceof TicketError) {
+      res.status(err.statusCode).json({ error: err.message });
       return;
     }
 

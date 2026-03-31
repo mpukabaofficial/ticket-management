@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { requireAuth } from "../middleware/auth";
 import userRoutes from "./user.routes";
+import ticketRoutes from "./ticket.routes";
 
 const router = Router();
 
@@ -14,5 +15,6 @@ router.get("/me", requireAuth, (req, res) => {
 });
 
 router.use("/users", userRoutes);
+router.use("/tickets", ticketRoutes);
 
 export default router;

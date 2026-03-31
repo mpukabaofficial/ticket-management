@@ -80,14 +80,15 @@ model Verification {
 }
 
 model Ticket {
-  id        String         @id @default(uuid())
-  subject   String
-  body      String
-  status    TicketStatus   @default(OPEN)
-  category  TicketCategory
+  id          Int             @id @default(autoincrement())
+  subject     String
+  body        String
+  status      TicketStatus    @default(OPEN)
+  category    TicketCategory?
   senderEmail String
-  createdAt DateTime       @default(now())
-  updatedAt DateTime       @updatedAt
+  senderName  String
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
 
   assignedToId String?
   assignedTo   User?   @relation(fields: [assignedToId], references: [id])
@@ -101,7 +102,7 @@ model Message {
   sender    String
   createdAt DateTime @default(now())
 
-  ticketId String
+  ticketId Int
   ticket   Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
 
   userId String?

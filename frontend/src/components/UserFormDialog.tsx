@@ -66,15 +66,19 @@ export default function UserFormDialog(props: UserFormDialogProps) {
     },
   });
 
+  const editUserId = isEdit ? props.user.id : null;
+  const editUserName = isEdit ? props.user.name : "";
+  const editUserEmail = isEdit ? props.user.email : "";
+
   useEffect(() => {
     if (isEdit && open) {
       form.reset({
-        name: props.user.name,
-        email: props.user.email,
+        name: editUserName,
+        email: editUserEmail,
         password: "",
       });
     }
-  }, [isEdit, open, isEdit ? props.user.id : null]);
+  }, [isEdit, open, editUserId, editUserName, editUserEmail, form]);
 
   const mutation = useMutation({
     mutationFn: (data: FormData) =>

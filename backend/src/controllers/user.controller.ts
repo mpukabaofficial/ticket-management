@@ -1,5 +1,4 @@
 import type { Request, Response } from "express";
-import type { z } from "zod/v4";
 import { createUserSchema, editUserSchema } from "shared";
 import {
   getUsers,
@@ -7,16 +6,7 @@ import {
   updateUser as updateUserService,
   softDeleteUser,
 } from "../services/user.service";
-
-function validate<T extends z.ZodType>(schema: T, data: unknown, res: Response) {
-  const result = schema.safeParse(data);
-  if (!result.success) {
-    const messages = result.error.issues.map((i) => i.message);
-    res.status(400).json({ error: messages.join(", ") });
-    return null;
-  }
-  return result.data as z.infer<T>;
-}
+import { validate } from "../utils/validate";
 
 export async function listUsers(_req: Request, res: Response) {
   const users = await getUsers();

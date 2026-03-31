@@ -1,0 +1,3 @@
+- [Auth flow & admin credentials](auth_flow.md) — admin login steps, credentials, serial mode requirement
+- [API-only test pattern](api_only_tests.md) — how to write backend API tests using Playwright's request fixture
+- [Backend port in tests](backend_port.md) — backend always on 3001 during E2E, not 3000

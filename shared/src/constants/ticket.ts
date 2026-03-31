@@ -1,0 +1,16 @@
+export const TicketStatus = {
+  OPEN: "OPEN",
+  RESOLVED: "RESOLVED",
+  CLOSED: "CLOSED",
+} as const;
+
+export type TicketStatus = (typeof TicketStatus)[keyof typeof TicketStatus];
+
+export const TicketCategory = {
+  GENERAL: "GENERAL",
+  TECHNICAL: "TECHNICAL",
+  REFUND: "REFUND",
+} as const;
+
+export type TicketCategory =
+  (typeof TicketCategory)[keyof typeof TicketCategory];

@@ -27,6 +27,9 @@ export default function MainLayout() {
               <Button variant="ghost" size="sm" asChild>
                 <Link to="/">Dashboard</Link>
               </Button>
+              <Button variant="ghost" size="sm" asChild>
+                <Link to="/tickets">Tickets</Link>
+              </Button>
               {session.user.role === Role.ADMIN && (
                 <Button variant="ghost" size="sm" asChild>
                   <Link to="/users">Users</Link>

@@ -26,8 +26,11 @@ backend/
     lib/auth.ts         — Better Auth configuration
     middleware/auth.ts   — Auth middleware for protected routes
     routes/index.ts     — API route definitions
-    controllers/        — Route handlers (user.controller.ts)
-    services/           — Business logic (user.service.ts)
+    routes/user.routes.ts   — User CRUD endpoints
+    routes/ticket.routes.ts — Ticket endpoints (email intake + list)
+    controllers/        — Route handlers (user.controller.ts, ticket.controller.ts)
+    services/           — Business logic (user.service.ts, ticket.service.ts)
+    utils/validate.ts   — Shared Zod validation helper for controllers
     types/express.d.ts  — Express type augmentation
   prisma/
     schema.prisma       — Database schema (includes Better Auth tables + role field)
@@ -40,9 +43,9 @@ frontend/
   components.json       — shadcn/ui configuration
   src/
     index.css           — Tailwind imports + shadcn theme variables
-    pages/              — Login, Dashboard, Users, NotFound
-    components/         — PrivateRoute (auth guard), AdminRoute (role guard)
-    components/ui/      — shadcn/ui components (alert, badge, button, card, field, input, label, separator, skeleton, sonner, table)
+    pages/              — Login, Dashboard, Users, Tickets, NotFound
+    components/         — PrivateRoute, AdminRoute, UsersTable, UserFormDialog
+    components/ui/      — shadcn/ui components (alert, alert-dialog, badge, button, card, checkbox, dialog, field, input, label, separator, skeleton, sonner, table)
     layouts/            — MainLayout (navbar + sign-out)
     lib/auth-client.ts  — Better Auth client instance
     lib/utils.ts        — cn() helper (clsx + tailwind-merge)
@@ -50,8 +53,9 @@ frontend/
     services/           — API services
 shared/
   src/
-    index.ts            — Package entry point (re-exports all schemas)
-    schemas/            — Zod validation schemas shared between backend + frontend
+    index.ts            — Package entry point (re-exports all schemas, enums, types)
+    schemas/            — Zod validation schemas (user.ts, ticket.ts)
+    constants/          — Shared enums (role.ts, ticket.ts)
 docker-compose.yml      — Docker services (dev Postgres, test Postgres, backend, frontend)
 ```
 
@@ -109,29 +113,36 @@ docker-compose.yml      — Docker services (dev Postgres, test Postgres, backen
 - Role is NOT managed by Better Auth — set via direct Prisma update after user creation
 - Seed script creates admin by calling `auth.api.signUpEmail()` then updating role via Prisma
 - **Frontend route guards:** `PrivateRoute` (any authenticated user) and `AdminRoute` (ADMIN role only) — both show loading spinner while session loads
-- **Navbar:** Admin-only links (e.g. Users) conditionally rendered via `session.user.role === "ADMIN"`
+- **Navbar:** Tickets link visible to all authenticated users; Users link admin-only — use `Role` enum from `shared`, not magic strings
 
 ### Frontend Routes
 ```
 /login          → Login (public)
 /               → Dashboard (authenticated)
+/tickets        → Tickets (authenticated)
 /users          → Users (admin only)
 *               → NotFound (authenticated)
 ```
 
 ## Database Schema
 - **Enums:** `Role` (ADMIN, AGENT), `TicketStatus` (OPEN, RESOLVED, CLOSED), `TicketCategory` (GENERAL, TECHNICAL, REFUND)
-- **User** — Better Auth managed + custom `role` field; relations to sessions, accounts, tickets, messages
+- **User** — Better Auth managed + custom `role` field + `deletedAt` (soft delete); relations to sessions, accounts, tickets, messages
 - **Session / Account / Verification** — Better Auth managed tables
-- **Ticket** — UUID PK, `status` (default: OPEN), `category`, `senderEmail` (external), optional `assignedToId` → User
-- **Message** — UUID PK, `sender` (string, not FK — can be AI/agent/external), optional `userId` → User
+- **Ticket** — Auto-increment Int PK, `status` (default: OPEN), `category` (optional), `senderEmail` + `senderName` (external), optional `assignedToId` → User
+- **Message** — UUID PK, `sender` (string, not FK — can be AI/agent/external), `ticketId` (Int), optional `userId` → User
 - **Cascade deletes:** User→Sessions, User→Accounts, Ticket→Messages
+- **Soft delete:** Users have `deletedAt DateTime?` — soft-deleted users have sessions revoked
 - Prisma client generated to `backend/src/generated/prisma/client` (gitignored, regenerate with `bun run db:generate`)
 
 ## API Routes
 - `GET /api/health` — public, returns `{ status: "ok" }`
 - `GET /api/me` — protected (`requireAuth`), returns `{ user: req.user }`
-- `GET /api/users` — admin only (`requireAuth` + `requireRole("ADMIN")`), returns `{ users }`
+- `GET /api/users` — admin only, returns `{ users }`
+- `POST /api/users` — admin only, create user (validates with `createUserSchema`)
+- `PUT /api/users/:id` — admin only, update user (validates with `editUserSchema`)
+- `DELETE /api/users/:id` — admin only, soft-delete user (revokes sessions)
+- `GET /api/tickets` — protected (any authenticated user), returns `{ tickets }`
+- `POST /api/tickets/email` — **public** (no auth — webhook endpoint), creates ticket + first message from inbound email
 - `/api/auth/*` — Better Auth endpoints (sign-in, sign-out, session, etc.)
 
 ## Key Patterns

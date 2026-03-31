@@ -6,6 +6,7 @@ import { toNodeHandler } from "better-auth/node";
 import { config } from "./config";
 import { auth } from "./lib/auth";
 import routes from "./routes";
+import { UserError } from "./services/user.service";
 
 const app = express();
 
@@ -45,6 +46,11 @@ app.use(
     res: express.Response,
     _next: express.NextFunction
   ) => {
+    if (err instanceof UserError) {
+      res.status(409).json({ error: err.message });
+      return;
+    }
+
     console.error(err);
     res.status(500).json({ error: "Internal server error" });
   }

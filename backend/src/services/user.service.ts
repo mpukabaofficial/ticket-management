@@ -19,6 +19,11 @@ export async function createUser(
   email: string,
   password: string,
 ) {
+  const existing = await prisma.user.findUnique({ where: { email } });
+  if (existing) {
+    throw new UserError("A user with this email already exists");
+  }
+
   const result = await auth.api.signUpEmail({
     body: { email, name, password },
   });
@@ -37,4 +42,11 @@ export async function createUser(
       createdAt: true,
     },
   });
+}
+
+export class UserError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "UserError";
+  }
 }

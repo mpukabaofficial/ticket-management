@@ -28,14 +28,14 @@ export default function TicketSummary({ ticketId }: TicketSummaryProps) {
   });
 
   return (
-    <Card>
+    <Card className="rounded-2xl shadow-sm shadow-border/30">
       <CardHeader>
-        <CardTitle className="text-lg">Summary</CardTitle>
+        <CardTitle className="font-heading text-xl" style={{ fontOpticalSizing: "auto" }}>Summary</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
         <Button
           variant="outline"
-          className="w-full"
+          className="w-full rounded-xl"
           disabled={summaryMutation.isPending}
           onClick={() => summaryMutation.mutate()}
         >
@@ -43,7 +43,7 @@ export default function TicketSummary({ ticketId }: TicketSummaryProps) {
           {summaryMutation.isPending ? "Generating..." : "Summarize"}
         </Button>
         {summaryMutation.data && (
-          <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+          <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
             {summaryMutation.data}
           </p>
         )}

@@ -35,21 +35,21 @@ export default function TicketFilters({
   onSearchChange,
 }: TicketFiltersProps) {
   return (
-    <div className="flex flex-wrap items-center gap-3 mb-4">
+    <div className="flex flex-wrap items-center gap-3 mb-5">
       <div className="relative">
-        <RiSearchLine className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
+        <RiSearchLine className="absolute left-3 top-2.5 size-4 text-muted-foreground" />
         <Input
           placeholder="Search subject or sender..."
           value={searchInput}
           onChange={(e) => onSearchChange(e.target.value)}
-          className="pl-9 w-64"
+          className="pl-9 w-64 rounded-xl"
         />
       </div>
       <Select value={statusFilter} onValueChange={onStatusChange}>
-        <SelectTrigger className="w-40">
+        <SelectTrigger className="w-40 rounded-xl">
           <SelectValue placeholder="Status" />
         </SelectTrigger>
-        <SelectContent>
+        <SelectContent className="rounded-xl">
           <SelectItem value={ALL}>All statuses</SelectItem>
           {AgentVisibleStatuses.map((s) => (
             <SelectItem key={s} value={s}>
@@ -59,10 +59,10 @@ export default function TicketFilters({
         </SelectContent>
       </Select>
       <Select value={categoryFilter} onValueChange={onCategoryChange}>
-        <SelectTrigger className="w-40">
+        <SelectTrigger className="w-40 rounded-xl">
           <SelectValue placeholder="Category" />
         </SelectTrigger>
-        <SelectContent>
+        <SelectContent className="rounded-xl">
           <SelectItem value={ALL}>All categories</SelectItem>
           {Object.values(TicketCategory).map((c) => (
             <SelectItem key={c} value={c}>

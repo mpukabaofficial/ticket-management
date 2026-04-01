@@ -13,7 +13,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import {
@@ -43,6 +42,19 @@ interface UsersTableProps {
   users: User[] | undefined;
   isPending: boolean;
   showDeleted: boolean;
+}
+
+function RoleBadge({ role }: { role: RoleType }) {
+  const isAdmin = role === Role.ADMIN;
+  return (
+    <span className={`inline-flex items-center px-2.5 py-0.5 text-xs font-medium rounded-xl border ${
+      isAdmin
+        ? "bg-primary/10 text-primary border-primary/20"
+        : "bg-stone-100 text-stone-600 border-stone-200"
+    }`}>
+      {role}
+    </span>
+  );
 }
 
 export default function UsersTable({
@@ -79,7 +91,7 @@ export default function UsersTable({
 
   return (
     <>
-      <Card>
+      <Card className="rounded-2xl shadow-sm shadow-border/30">
         <CardContent className="p-0">
           {isPending ? (
             <Table>
@@ -115,7 +127,7 @@ export default function UsersTable({
               </TableBody>
             </Table>
           ) : filteredUsers?.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-6">
+            <p className="text-sm text-muted-foreground text-center py-10">
               No users found.
             </p>
           ) : (
@@ -135,7 +147,10 @@ export default function UsersTable({
                   return (
                     <TableRow
                       key={user.id}
-                      className={cn(isDeleted && "opacity-50")}
+                      className={cn(
+                        "hover:bg-accent/50 transition-colors",
+                        isDeleted && "opacity-50"
+                      )}
                     >
                       <TableCell className="font-medium">
                         {user.name}
@@ -145,19 +160,15 @@ export default function UsersTable({
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-1.5">
-                          <Badge
-                            variant={
-                              user.role === Role.ADMIN ? "default" : "secondary"
-                            }
-                          >
-                            {user.role}
-                          </Badge>
+                          <RoleBadge role={user.role} />
                           {isDeleted && (
-                            <Badge variant="destructive">Deleted</Badge>
+                            <span className="inline-flex items-center px-2.5 py-0.5 text-xs font-medium rounded-xl border bg-red-50 text-red-600 border-red-200">
+                              Deleted
+                            </span>
                           )}
                         </div>
                       </TableCell>
-                      <TableCell className="text-muted-foreground">
+                      <TableCell className="text-muted-foreground tabular-nums">
                         {new Date(user.createdAt).toLocaleDateString(
                           undefined,
                           {
@@ -229,9 +240,10 @@ export default function UsersTable({
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel className="rounded-xl">Cancel</AlertDialogCancel>
             <AlertDialogAction
               variant="destructive"
+              className="rounded-xl"
               onClick={() => {
                 if (deletingUser) {
                   deleteMutation.mutate(deletingUser.id);

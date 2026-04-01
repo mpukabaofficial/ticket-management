@@ -79,77 +79,92 @@ test.describe("POST /api/tickets/email — happy path", () => {
 });
 
 // ---------------------------------------------------------------------------
-// 2. Duplicate detection — same senderEmail + subject within 5 minutes → 409
+// 2. Reply threading — same senderEmail + subject on open ticket → threads reply
 // ---------------------------------------------------------------------------
 
-test.describe("POST /api/tickets/email — duplicate detection", () => {
-  test("returns 409 when the same senderEmail and subject are submitted twice within 5 minutes", async ({
+test.describe("POST /api/tickets/email — reply threading", () => {
+  test("threads a reply onto the existing open ticket when same sender and subject are submitted again", async ({
     request,
   }) => {
     const payload = {
-      from: "duplicate@example.com",
-      senderName: "Duplicate Student",
-      subject: "Duplicate detection test subject",
+      from: "threading@example.com",
+      senderName: "Threading Student",
+      subject: "Threading test subject",
       body: "First submission.",
     };
 
     const first = await request.post(WEBHOOK_URL, { data: payload });
     expect(first.status()).toBe(201);
+    const { ticket: originalTicket } = await first.json();
+    expect(originalTicket.messages).toHaveLength(1);
 
     const second = await request.post(WEBHOOK_URL, {
-      data: { ...payload, body: "Second submission with same subject." },
+      data: { ...payload, body: "Follow-up message." },
     });
-    expect(second.status()).toBe(409);
+    expect(second.status()).toBe(201);
 
-    const json = await second.json();
-    expect(json).toHaveProperty("error");
-    expect(json.error.toLowerCase()).toMatch(/duplicate/i);
+    const { ticket: updatedTicket } = await second.json();
+    expect(updatedTicket.id).toBe(originalTicket.id);
+    expect(updatedTicket.messages).toHaveLength(2);
+    expect(updatedTicket.messages[1].body).toBe("Follow-up message.");
   });
 
-  test("a different subject from the same sender is accepted (not a duplicate)", async ({
+  test("a different subject from the same sender creates a separate ticket", async ({
     request,
   }) => {
-    const sender = "notduplicate@example.com";
+    const sender = "newsubject@example.com";
 
     const first = await request.post(WEBHOOK_URL, {
       data: {
         from: sender,
-        senderName: "Non Duplicate Student",
+        senderName: "New Subject Student",
         subject: "First unique subject",
         body: "First ticket body.",
       },
     });
     expect(first.status()).toBe(201);
+    const { ticket: firstTicket } = await first.json();
 
     const second = await request.post(WEBHOOK_URL, {
       data: {
         from: sender,
-        senderName: "Non Duplicate Student",
+        senderName: "New Subject Student",
         subject: "Second unique subject",
         body: "Second ticket body.",
       },
     });
     expect(second.status()).toBe(201);
+    const { ticket: secondTicket } = await second.json();
+
+    expect(secondTicket.id).not.toBe(firstTicket.id);
   });
 
-  test("the 409 response body contains the duplicate ticket id", async ({
+  test("reply threading strips Re:/Fwd: prefixes to match the original subject", async ({
     request,
   }) => {
     const payload = {
-      from: "dupid@example.com",
-      senderName: "Dup ID Student",
-      subject: "Duplicate id subject",
-      body: "Original body.",
+      from: "reprefix@example.com",
+      senderName: "Re Prefix Student",
+      subject: "Original support question",
+      body: "Initial question.",
     };
 
     const first = await request.post(WEBHOOK_URL, { data: payload });
     expect(first.status()).toBe(201);
     const { ticket: originalTicket } = await first.json();
 
-    const second = await request.post(WEBHOOK_URL, { data: payload });
-    expect(second.status()).toBe(409);
+    const reply = await request.post(WEBHOOK_URL, {
+      data: {
+        from: "reprefix@example.com",
+        senderName: "Re Prefix Student",
+        subject: "Re: Original support question",
+        body: "Thanks for the help!",
+      },
+    });
+    expect(reply.status()).toBe(201);
 
-    const json = await second.json();
-    expect(json.error).toContain(String(originalTicket.id));
+    const { ticket: updatedTicket } = await reply.json();
+    expect(updatedTicket.id).toBe(originalTicket.id);
+    expect(updatedTicket.messages).toHaveLength(2);
   });
 });

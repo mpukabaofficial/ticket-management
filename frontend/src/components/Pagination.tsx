@@ -13,7 +13,7 @@ export default function Pagination({ page, pageSize, total, onPageChange }: Pagi
   if (totalPages <= 1) return null;
 
   return (
-    <div className="flex items-center justify-between mt-4">
+    <div className="flex items-center justify-between mt-5">
       <p className="text-sm text-muted-foreground">
         Showing {(page - 1) * pageSize + 1}–
         {Math.min(page * pageSize, total)} of {total}
@@ -22,17 +22,19 @@ export default function Pagination({ page, pageSize, total, onPageChange }: Pagi
         <Button
           variant="outline"
           size="sm"
+          className="rounded-xl"
           disabled={page <= 1}
           onClick={() => onPageChange(page - 1)}
         >
           Previous
         </Button>
-        <span className="text-sm text-muted-foreground">
+        <span className="text-sm text-muted-foreground tabular-nums">
           Page {page} of {totalPages}
         </span>
         <Button
           variant="outline"
           size="sm"
+          className="rounded-xl"
           disabled={page >= totalPages}
           onClick={() => onPageChange(page + 1)}
         >

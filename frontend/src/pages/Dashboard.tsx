@@ -82,7 +82,7 @@ const statCards = [
   },
   {
     key: "avgResolutionTimeMs" as const,
-    label: "Avg Resolution Time",
+    label: "Avg Resolution",
     icon: RiTimeLine,
     format: (stats: TicketStats) => formatDuration(stats.avgResolutionTimeMs),
   },
@@ -108,24 +108,28 @@ export default function Dashboard() {
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold text-foreground mb-6">Dashboard</h1>
+      <h1 className="font-heading text-3xl text-foreground mb-8" style={{ fontOpticalSizing: "auto" }}>
+        Dashboard
+      </h1>
 
       <ErrorAlert message={errorMessage} className="mb-6" />
 
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-5 lg:grid-cols-4">
         {statCards.map(({ key, label, icon: Icon, format }) => (
-          <Card key={key}>
+          <Card key={key} className="rounded-2xl shadow-sm shadow-border/30 hover:shadow-md hover:shadow-border/30 transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
                 {label}
               </CardTitle>
-              <Icon className="size-4 text-muted-foreground" />
+              <div className="size-8 rounded-xl bg-primary/8 flex items-center justify-center">
+                <Icon className="size-4 text-primary" />
+              </div>
             </CardHeader>
             <CardContent>
               {isPending ? (
-                <Skeleton className="h-8 w-20" />
+                <Skeleton className="h-9 w-24" />
               ) : data ? (
-                <p className="text-2xl font-bold">
+                <p className="text-3xl font-heading tracking-tight" style={{ fontOpticalSizing: "auto" }}>
                   {format ? format(data) : data[key]}
                 </p>
               ) : null}
@@ -134,12 +138,12 @@ export default function Dashboard() {
         ))}
       </div>
 
-      <Card className="mt-6">
+      <Card className="mt-8 rounded-2xl shadow-sm shadow-border/30">
         <CardHeader>
-          <CardTitle>Tickets by Day</CardTitle>
-          <CardDescription>
-            {new Date().toLocaleDateString(undefined, { month: "long", year: "numeric" })}
-          </CardDescription>
+          <CardTitle className="font-heading text-xl" style={{ fontOpticalSizing: "auto" }}>
+            Tickets by Day
+          </CardTitle>
+          <CardDescription>Last 30 days</CardDescription>
         </CardHeader>
         <CardContent>
           {isPending ? (
@@ -147,7 +151,7 @@ export default function Dashboard() {
           ) : data?.dailyResolutions.length ? (
             <ChartContainer config={chartConfig}>
               <BarChart accessibilityLayer data={data.dailyResolutions}>
-                <CartesianGrid vertical={false} />
+                <CartesianGrid vertical={false} strokeOpacity={0.06} />
                 <XAxis
                   dataKey="date"
                   tickLine={false}
@@ -161,7 +165,7 @@ export default function Dashboard() {
                   dataKey="ai"
                   stackId="a"
                   fill="var(--color-ai)"
-                  radius={[0, 0, 4, 4]}
+                  radius={[0, 0, 6, 6]}
                 />
                 <Bar
                   dataKey="agent"
@@ -173,7 +177,7 @@ export default function Dashboard() {
                   dataKey="unresolved"
                   stackId="a"
                   fill="var(--color-unresolved)"
-                  radius={[4, 4, 0, 0]}
+                  radius={[6, 6, 0, 0]}
                 />
               </BarChart>
             </ChartContainer>

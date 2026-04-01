@@ -97,11 +97,11 @@ export default function TicketDetailsSidebar({
   });
 
   return (
-    <Card>
+    <Card className="rounded-2xl shadow-sm shadow-border/30">
       <CardHeader>
-        <CardTitle className="text-lg">Details</CardTitle>
+        <CardTitle className="font-heading text-xl" style={{ fontOpticalSizing: "auto" }}>Details</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-5">
         <div>
           <label className="text-sm text-muted-foreground mb-1.5 block">Status</label>
           <div className="flex items-center gap-2">
@@ -110,10 +110,10 @@ export default function TicketDetailsSidebar({
               onValueChange={setSelectedStatus}
               disabled={updateMutation.isPending}
             >
-              <SelectTrigger className="flex-1">
+              <SelectTrigger className="flex-1 rounded-xl">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="rounded-xl">
                 {AgentVisibleStatuses.map((s) => (
                   <SelectItem key={s} value={s}>
                     {capitalize(s)}
@@ -124,7 +124,7 @@ export default function TicketDetailsSidebar({
             {selectedStatus !== UNCHANGED && selectedStatus !== status && (
               <Button
                 size="sm"
-                className="shrink-0 w-18"
+                className="shrink-0 w-18 rounded-xl"
                 disabled={updateMutation.isPending}
                 onClick={() => {
                   updateMutation.mutate({ status: selectedStatus }, {
@@ -146,10 +146,10 @@ export default function TicketDetailsSidebar({
               onValueChange={setSelectedCategory}
               disabled={updateMutation.isPending}
             >
-              <SelectTrigger className="flex-1">
+              <SelectTrigger className="flex-1 rounded-xl">
                 <SelectValue placeholder="None" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="rounded-xl">
                 {Object.values(TicketCategory).map((c) => (
                   <SelectItem key={c} value={c}>
                     {capitalize(c)}
@@ -160,7 +160,7 @@ export default function TicketDetailsSidebar({
             {selectedCategory !== UNCHANGED && selectedCategory !== (category ?? UNCHANGED) && (
               <Button
                 size="sm"
-                className="shrink-0 w-18"
+                className="shrink-0 w-18 rounded-xl"
                 disabled={updateMutation.isPending}
                 onClick={() => {
                   updateMutation.mutate({ category: selectedCategory }, {
@@ -182,10 +182,10 @@ export default function TicketDetailsSidebar({
               onValueChange={setSelectedAgent}
               disabled={assignMutation.isPending}
             >
-              <SelectTrigger className="flex-1">
+              <SelectTrigger className="flex-1 rounded-xl">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="rounded-xl">
                 <SelectItem value={UNASSIGNED} disabled>
                   Unassigned
                 </SelectItem>
@@ -199,7 +199,7 @@ export default function TicketDetailsSidebar({
             {selectedAgent !== UNASSIGNED && selectedAgent !== assignedTo?.id && (
               <Button
                 size="sm"
-                className="shrink-0 w-18"
+                className="shrink-0 w-18 rounded-xl"
                 disabled={assignMutation.isPending}
                 onClick={() => {
                   assignMutation.mutate(selectedAgent, {

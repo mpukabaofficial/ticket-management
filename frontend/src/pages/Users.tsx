@@ -32,8 +32,10 @@ export default function Users() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-semibold text-foreground">Users</h1>
+      <div className="flex items-center justify-between mb-8">
+        <h1 className="font-heading text-3xl text-foreground" style={{ fontOpticalSizing: "auto" }}>
+          Users
+        </h1>
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
             <Checkbox

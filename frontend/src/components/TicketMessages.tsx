@@ -2,7 +2,6 @@ import { useState } from "react";
 import { SenderType } from "shared";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { TicketWithMessages } from "@/types/ticket";
 
@@ -33,11 +32,11 @@ export default function TicketMessages({ messages }: TicketMessagesProps) {
   const visibleMessages = messages.slice(hiddenCount);
 
   return (
-    <Card>
+    <Card className="rounded-2xl shadow-sm shadow-border/30">
       <CardHeader>
-        <CardTitle className="text-lg">
+        <CardTitle className="font-heading text-xl" style={{ fontOpticalSizing: "auto" }}>
           Messages
-          <span className="text-sm font-normal text-muted-foreground ml-2">
+          <span className="text-sm font-sans font-normal text-muted-foreground ml-2">
             ({messages.length})
           </span>
         </CardTitle>
@@ -46,45 +45,50 @@ export default function TicketMessages({ messages }: TicketMessagesProps) {
         {messages.length === 0 ? (
           <p className="text-sm text-muted-foreground">No messages yet.</p>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-5">
             {hiddenCount > 0 && (
               <Button
                 variant="outline"
                 size="sm"
-                className="w-full"
+                className="w-full rounded-xl"
                 onClick={() => setVisibleCount((prev) => prev + PAGE_SIZE)}
               >
                 Show {Math.min(hiddenCount, PAGE_SIZE)} older messages
               </Button>
             )}
-            {visibleMessages.map((message, i) => (
-              <div key={message.id}>
-                {i > 0 && <Separator className="mb-4" />}
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium">
-                      {message.sender}
-                    </span>
-                    <Badge
-                      variant={
-                        message.senderType === SenderType.AGENT
-                          ? "default"
-                          : "secondary"
-                      }
-                    >
-                      {capitalize(message.senderType)}
-                    </Badge>
-                    {message.isAiGenerated && (
-                      <Badge variant="outline">AI</Badge>
-                    )}
+            {visibleMessages.map((message, i) => {
+              const isAgent = message.senderType === SenderType.AGENT;
+              return (
+                <div key={message.id}>
+                  {i > 0 && <Separator className="mb-5 opacity-40" />}
+                  <div className={`rounded-2xl p-4 ${isAgent ? "bg-primary/5 border border-primary/10" : "bg-muted/60"}`}>
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium">
+                          {message.sender}
+                        </span>
+                        <span className={`inline-flex items-center px-2 py-0.5 text-xs rounded-lg border ${
+                          isAgent
+                            ? "bg-primary/10 text-primary border-primary/20"
+                            : "bg-stone-100 text-stone-600 border-stone-200"
+                        }`}>
+                          {capitalize(message.senderType)}
+                        </span>
+                        {message.isAiGenerated && (
+                          <span className="inline-flex items-center px-2 py-0.5 text-xs rounded-lg border bg-violet-50 text-violet-600 border-violet-200">
+                            AI
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-xs text-muted-foreground">
+                        {formatDate(message.createdAt)}
+                      </span>
+                    </div>
+                    <p className="text-sm whitespace-pre-wrap leading-relaxed">{message.body}</p>
                   </div>
-                  <span className="text-xs text-muted-foreground">
-                    {formatDate(message.createdAt)}
-                  </span>
                 </div>
-                <p className="text-sm whitespace-pre-wrap">{message.body}</p>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </CardContent>

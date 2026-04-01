@@ -45,7 +45,7 @@ export default function TicketDetailPage() {
   return (
     <div>
       <Link to="/tickets">
-        <Button variant="ghost" size="sm" className="mb-4 gap-1">
+        <Button variant="ghost" size="sm" className="mb-6 gap-1 text-muted-foreground hover:text-foreground rounded-xl">
           <RiArrowLeftLine className="size-4" />
           Back to tickets
         </Button>
@@ -54,7 +54,7 @@ export default function TicketDetailPage() {
       <ErrorAlert message={errorMessage} className="mb-6" />
 
       {isPending ? (
-        <Card>
+        <Card className="rounded-2xl shadow-sm shadow-border/30">
           <CardHeader>
             <Skeleton className="h-6 w-96" />
           </CardHeader>
@@ -65,12 +65,12 @@ export default function TicketDetailPage() {
           </CardContent>
         </Card>
       ) : ticket ? (
-        <div className="grid grid-cols-[1fr_250px] gap-6">
-          {/* Left column — ticket info + messages + reply */}
+        <div className="grid grid-cols-[1fr_260px] gap-6">
+          {/* Left column */}
           <div className="space-y-6">
-            <Card>
+            <Card className="rounded-2xl shadow-sm shadow-border/30">
               <CardHeader>
-                <CardTitle className="text-xl">
+                <CardTitle className="font-heading text-2xl" style={{ fontOpticalSizing: "auto" }}>
                   <span className="text-muted-foreground mr-2">#{ticket.id}</span>
                   {ticket.subject}
                 </CardTitle>
@@ -78,12 +78,12 @@ export default function TicketDetailPage() {
               <CardContent>
                 <dl className="grid grid-cols-2 gap-x-8 gap-y-3 text-sm">
                   <div>
-                    <dt className="text-muted-foreground">Sender</dt>
-                    <dd>{ticket.senderName} ({ticket.senderEmail})</dd>
+                    <dt className="text-muted-foreground mb-0.5">Sender</dt>
+                    <dd className="font-medium">{ticket.senderName} ({ticket.senderEmail})</dd>
                   </div>
                   <div>
-                    <dt className="text-muted-foreground">Created</dt>
-                    <dd>{formatDate(ticket.createdAt)}</dd>
+                    <dt className="text-muted-foreground mb-0.5">Created</dt>
+                    <dd className="font-medium">{formatDate(ticket.createdAt)}</dd>
                   </div>
                 </dl>
               </CardContent>
@@ -93,7 +93,7 @@ export default function TicketDetailPage() {
             <TicketReplyForm ticket={ticket} />
           </div>
 
-          {/* Right column — actions */}
+          {/* Right column */}
           <div className="space-y-6">
             <TicketDetailsSidebar
               ticketId={id!}

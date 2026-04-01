@@ -249,10 +249,10 @@ interface StatsRow {
 
 export async function getTicketStats() {
   const now = new Date();
-  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
   const rows = await prisma.$queryRaw<StatsRow[]>`
-    SELECT * FROM get_ticket_stats(${monthStart})
+    SELECT * FROM get_ticket_stats(${thirtyDaysAgo})
   `;
 
   if (rows.length === 0) {

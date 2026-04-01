@@ -107,29 +107,30 @@ test.describe("TicketDetail — happy path", () => {
 
   test("shows the initial customer message in the messages list", async ({ page }) => {
     // TicketMessages renders each message body as a paragraph
-    await expect(page.getByText("I cannot access my enrolled course.")).toBeVisible();
+    await expect(page.getByText("I cannot access my enrolled course.").first()).toBeVisible();
 
     // The sender name appears as the message author
     await expect(page.getByText("Happy Student").first()).toBeVisible();
 
     // The customer senderType badge
-    await expect(page.getByText("Customer")).toBeVisible();
+    await expect(page.getByText("Customer").first()).toBeVisible();
   });
 
   test("shows the sidebar Details card with status, category, and assigned-to controls", async ({
     page,
   }) => {
     // The sidebar card heading
-    await expect(page.getByRole("heading", { name: "Details" })).toBeVisible();
+    const sidebar = page.locator('[data-slot="card"]', { hasText: "Details" });
+    await expect(sidebar).toBeVisible();
 
     // Status label and select
-    await expect(page.getByText("Status")).toBeVisible();
+    await expect(sidebar.getByText("Status")).toBeVisible();
 
     // Category label and select
-    await expect(page.getByText("Category")).toBeVisible();
+    await expect(sidebar.getByText("Category")).toBeVisible();
 
     // Assigned to label
-    await expect(page.getByText("Assigned to")).toBeVisible();
+    await expect(sidebar.getByText("Assigned to")).toBeVisible();
   });
 
   test("shows the Back to tickets navigation link", async ({ page }) => {
@@ -166,10 +167,10 @@ test.describe("TicketDetail — reply to ticket", () => {
     const replyText = "Thank you for reaching out. We are looking into this.";
 
     // The Reply card heading
-    await expect(page.getByRole("heading", { name: "Reply" })).toBeVisible();
+    await expect(page.getByText("Reply", { exact: true })).toBeVisible();
 
     // Fill in the textarea — label is "Message"
-    await page.getByLabel("Message").fill(replyText);
+    await page.getByPlaceholder("Type your reply...").fill(replyText);
 
     // Submit the reply
     await page.getByRole("button", { name: /send reply/i }).click();
@@ -184,7 +185,7 @@ test.describe("TicketDetail — reply to ticket", () => {
     await expect(page.getByText("Agent")).toBeVisible();
 
     // The textarea should be cleared after a successful submit
-    await expect(page.getByLabel("Message")).toHaveValue("");
+    await expect(page.getByPlaceholder("Type your reply...")).toHaveValue("");
   });
 
   test("the Send Reply button is disabled while the request is in flight", async ({
@@ -202,7 +203,7 @@ test.describe("TicketDetail — reply to ticket", () => {
       await route.continue();
     });
 
-    await page.getByLabel("Message").fill("Testing loading state.");
+    await page.getByPlaceholder("Type your reply...").fill("Testing loading state.");
 
     const clickPromise = page.getByRole("button", { name: /send reply/i }).click();
 
@@ -239,7 +240,7 @@ test.describe("TicketDetail — update ticket status", () => {
     await expect(page.getByRole("button", { name: /^save$/i })).not.toBeVisible();
 
     // Click the Status select trigger — it is inside the "Details" sidebar card
-    const sidebar = page.getByRole("heading", { name: "Details" }).locator("../..");
+    const sidebar = page.locator('[data-slot="card"]', { hasText: "Details" });
     const statusSelect = sidebar.locator("select, [role='combobox']").first();
     await statusSelect.click();
 
@@ -268,7 +269,7 @@ test.describe("TicketDetail — update ticket status", () => {
   test("changing status to Closed persists after save and page reload", async ({
     page,
   }) => {
-    const sidebar = page.getByRole("heading", { name: "Details" }).locator("../..");
+    const sidebar = page.locator('[data-slot="card"]', { hasText: "Details" });
     const statusSelect = sidebar.locator("[role='combobox']").first();
     await statusSelect.click();
 
@@ -312,7 +313,7 @@ test.describe("TicketDetail — update ticket category", () => {
     await expect(page.getByRole("button", { name: /^save$/i })).not.toBeVisible();
 
     // The category combobox is the second combobox in the sidebar (after status)
-    const sidebar = page.getByRole("heading", { name: "Details" }).locator("../..");
+    const sidebar = page.locator('[data-slot="card"]', { hasText: "Details" });
     const categorySelect = sidebar.locator("[role='combobox']").nth(1);
     await categorySelect.click();
 
@@ -329,14 +330,14 @@ test.describe("TicketDetail — update ticket category", () => {
     await page.reload();
     await goToTicketDetail(page, ticketId);
 
-    const sidebar2 = page.getByRole("heading", { name: "Details" }).locator("../..");
+    const sidebar2 = page.locator('[data-slot="card"]', { hasText: "Details" });
     await expect(sidebar2.locator("[role='combobox']").nth(1)).toHaveText(/technical/i);
   });
 
   test("setting category to Refund persists after save and page reload", async ({
     page,
   }) => {
-    const sidebar = page.getByRole("heading", { name: "Details" }).locator("../..");
+    const sidebar = page.locator('[data-slot="card"]', { hasText: "Details" });
     const categorySelect = sidebar.locator("[role='combobox']").nth(1);
     await categorySelect.click();
 
@@ -348,7 +349,7 @@ test.describe("TicketDetail — update ticket category", () => {
     await page.reload();
     await goToTicketDetail(page, ticketId);
 
-    const sidebar2 = page.getByRole("heading", { name: "Details" }).locator("../..");
+    const sidebar2 = page.locator('[data-slot="card"]', { hasText: "Details" });
     await expect(sidebar2.locator("[role='combobox']").nth(1)).toHaveText(/refund/i);
   });
 });
@@ -378,7 +379,7 @@ test.describe("TicketDetail — assign ticket to agent", () => {
     await expect(page.getByRole("button", { name: /^assign$/i })).not.toBeVisible();
 
     // The "Assigned to" combobox is the third combobox in the sidebar
-    const sidebar = page.getByRole("heading", { name: "Details" }).locator("../..");
+    const sidebar = page.locator('[data-slot="card"]', { hasText: "Details" });
     const assignSelect = sidebar.locator("[role='combobox']").nth(2);
     await assignSelect.click();
 
@@ -400,7 +401,7 @@ test.describe("TicketDetail — assign ticket to agent", () => {
     await page.reload();
     await goToTicketDetail(page, ticketId);
 
-    const sidebar2 = page.getByRole("heading", { name: "Details" }).locator("../..");
+    const sidebar2 = page.locator('[data-slot="card"]', { hasText: "Details" });
     await expect(sidebar2.locator("[role='combobox']").nth(2)).toHaveText(/admin/i);
   });
 });

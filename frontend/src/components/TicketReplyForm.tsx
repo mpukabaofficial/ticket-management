@@ -66,9 +66,9 @@ export default function TicketReplyForm({ ticket }: TicketReplyFormProps) {
   });
 
   return (
-    <Card>
+    <Card className="rounded-2xl shadow-sm shadow-border/30">
       <CardHeader>
-        <CardTitle className="text-lg">Reply</CardTitle>
+        <CardTitle className="font-heading text-xl" style={{ fontOpticalSizing: "auto" }}>Reply</CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={form.handleSubmit((data) => replyMutation.mutate(data))} className="space-y-4">
@@ -83,6 +83,7 @@ export default function TicketReplyForm({ ticket }: TicketReplyFormProps) {
                   placeholder="Type your reply..."
                   rows={4}
                   disabled={replyMutation.isPending}
+                  className="rounded-xl"
                 />
                 {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
               </Field>
@@ -92,13 +93,18 @@ export default function TicketReplyForm({ ticket }: TicketReplyFormProps) {
             <Button
               type="button"
               variant="outline"
+              className="rounded-xl"
               disabled={polishMutation.isPending || replyMutation.isPending || !form.watch("body").trim()}
               onClick={() => polishMutation.mutate(form.getValues("body"))}
             >
               <RiSparklingLine className="size-4" />
               {polishMutation.isPending ? "Polishing..." : "Polish"}
             </Button>
-            <Button type="submit" disabled={replyMutation.isPending || polishMutation.isPending || !form.watch("body").trim()}>
+            <Button
+              type="submit"
+              className="rounded-xl"
+              disabled={replyMutation.isPending || polishMutation.isPending || !form.watch("body").trim()}
+            >
               {replyMutation.isPending ? "Sending..." : "Send Reply"}
             </Button>
           </div>

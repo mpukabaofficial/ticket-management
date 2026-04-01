@@ -60,7 +60,6 @@ export default function Tickets() {
   const tickets = data?.tickets;
   const total = data?.total ?? 0;
 
-  // Reset to page 1 when filters change
   function handleStatusChange(value: string) {
     setStatusFilter(value);
     setPage(1);
@@ -82,7 +81,9 @@ export default function Tickets() {
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold text-foreground mb-6">Tickets</h1>
+      <h1 className="font-heading text-3xl text-foreground mb-8" style={{ fontOpticalSizing: "auto" }}>
+        Tickets
+      </h1>
 
       <ErrorAlert message={errorMessage} className="mb-6" />
 
@@ -95,7 +96,7 @@ export default function Tickets() {
         onSearchChange={handleSearchChange}
       />
 
-      <Card>
+      <Card className="rounded-2xl shadow-sm shadow-border/30">
         <CardContent className="p-0">
           <TicketsTable
             tickets={tickets}

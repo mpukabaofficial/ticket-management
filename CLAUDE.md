@@ -18,6 +18,7 @@ AI-powered ticket management system for an online school. See `project-scope.md`
 - **Job Queue:** pg-boss (PostgreSQL-backed) — background job processing for ticket classification and auto-resolution
 - **Charts:** Recharts — stacked bar charts on the dashboard
 - **Email:** Resend — inbound webhook for receiving, SDK for sending replies
+- **Error Tracking:** Sentry — `@sentry/bun` (backend), `@sentry/react` (frontend with ErrorBoundary + session replay)
 - **Deployment:** Docker + Railway
 
 ## Project Structure
@@ -26,7 +27,7 @@ backend/
   src/
     app.ts              — Express app setup (CORS, auth handler, routes)
     server.ts           — Server entry point (DB connect + pg-boss start + listen)
-    config/             — Environment config (index.ts) + Prisma client (db.ts) + pg-boss queue (queue.ts)
+    config/             — Environment config (index.ts) + Prisma client (db.ts) + pg-boss queue (queue.ts) + Sentry init (sentry.ts)
     jobs/               — Background job workers (classify-ticket.ts, resolve-ticket.ts)
     lib/auth.ts         — Better Auth configuration
     middleware/auth.ts   — Auth middleware for protected routes
@@ -52,9 +53,10 @@ frontend/
     index.css           — Tailwind imports + shadcn theme variables
     pages/              — Login, Dashboard, Users, Tickets, TicketDetail, NotFound
     components/         — PrivateRoute, AdminRoute, UsersTable, UserFormDialog, ErrorAlert, TicketsTable, TicketMessages, TicketReplyForm, TicketDetailsSidebar, TicketFilters, TicketSummary, Pagination
-    components/ui/      — shadcn/ui components (alert, alert-dialog, badge, button, card, checkbox, dialog, field, input, label, select, separator, skeleton, sonner, table, textarea)
+    components/ui/      — shadcn/ui components (alert, alert-dialog, badge, button, card, chart, checkbox, dialog, field, input, label, select, separator, skeleton, sonner, table, textarea)
     layouts/            — MainLayout (navbar + sign-out)
     lib/auth-client.ts  — Better Auth client instance
+    lib/sentry.ts       — Sentry client initialization
     lib/utils.ts        — cn() helper (clsx + tailwind-merge)
     hooks/              — Custom hooks
     services/           — API services
@@ -171,9 +173,9 @@ docker-compose.yml      — Docker services (dev Postgres, test Postgres, backen
 - `/api/auth/*` — Better Auth endpoints (sign-in, sign-out, session, etc.)
 
 ## Key Patterns
-- **Middleware order in app.ts:** CORS → Helmet → Better Auth handler → `express.json()` → rate limiter → routes → global error handler
+- **Middleware order in app.ts:** CORS → Helmet → Better Auth handler → raw body capture (Resend webhook) → `express.json()` → rate limiter → routes → Sentry error handler → global error handler
 - **Global error handler:** Express 5 auto-forwards async errors to the error handler in `app.ts` — do NOT add try/catch in controllers. Handle domain errors (e.g. `UserError`) in the global error handler, not in individual controllers.
-- **Security:** Helmet for HTTP security headers, express-rate-limit for API rate limiting
+- **Security:** Helmet for HTTP security headers, express-rate-limit for API rate limiting, svix webhook signature verification for Resend inbound
 - **Backend architecture:** Controller + service pattern — controllers handle HTTP req/res, services handle Prisma queries
 - **Shared Zod schemas:** Define all Zod validation schemas in the `shared` package (`shared/src/schemas/`), import from `"shared"` in both backend and frontend. Use `zod/v4` for imports in schema files. Export all schemas through `shared/src/index.ts`.
 - **Zod v4 format validators:** Use `z.email()`, `z.url()`, `z.uuid()`, `z.iso.datetime()` etc. as top-level constructors — NOT `.email()`, `.url()` string methods, which are deprecated in Zod v4.
@@ -193,6 +195,7 @@ docker-compose.yml      — Docker services (dev Postgres, test Postgres, backen
 - **Data fetching:** Always use Axios for HTTP requests + TanStack React Query (`useQuery`/`useMutation`) for state management — never use raw `fetch` or manual `useState`/`useEffect` for API calls
 - **Route param parsing:** Use `parseIntParam(req.params.id, res, "ticket ID")` from `utils/validate.ts` to validate integer route params — rejects NaN, decimals, and values < 1
 - Backend uses ES modules (`"type": "module"`) with direct TypeScript execution via Bun (no build step)
+- **Sentry error tracking:** Backend uses `@sentry/bun` (init in `config/sentry.ts`, must be first import in `server.ts`). Frontend uses `@sentry/react` (init in `lib/sentry.ts`, must be first import in `main.tsx`). `Sentry.setupExpressErrorHandler(app)` sits between routes and the global error handler. Domain errors (`UserError`, `TicketError`) are reported as warnings; 500s as errors. Frontend wraps app in `Sentry.ErrorBoundary`. User context set via `Sentry.setUser()` in `requireAuth` middleware (backend) and `PrivateRoute` (frontend), cleared on sign-out. Source maps uploaded via `@sentry/vite-plugin` at build time. Both SDKs are no-ops when DSN is unset.
 
 ## Docker
 - **docker-compose.yml:** PostgreSQL 16 Alpine (dev + test) + backend + frontend (Nginx)
@@ -201,8 +204,9 @@ docker-compose.yml      — Docker services (dev Postgres, test Postgres, backen
 - Frontend Nginx: SPA fallback via `try_files`, API proxy to `http://backend:3000`
 
 ## Environment Variables
-- Backend: `PORT`, `TRUSTED_ORIGINS` (comma-separated origins), `NODE_ENV`, `DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `OPENAI_API_KEY`, `RESEND_API_KEY`
-- Frontend: `VITE_API_URL` (Better Auth client base URL, e.g. `http://localhost:3000`)
+- Backend: `PORT`, `TRUSTED_ORIGINS` (comma-separated origins), `NODE_ENV`, `DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `OPENAI_API_KEY`, `RESEND_API_KEY`, `RESEND_WEBHOOK_SECRET`, `SENTRY_DSN`
+- Frontend: `VITE_API_URL` (Better Auth client base URL, e.g. `http://localhost:3000`), `VITE_SENTRY_DSN`
+- Build-time (frontend): `SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, `SENTRY_PROJECT` — for source map uploads
 - See `.env.example` files in each directory
 
 ## Documentation

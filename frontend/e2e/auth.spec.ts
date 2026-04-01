@@ -39,14 +39,11 @@ test.describe("Login — happy path", () => {
   test("login page renders the sign in card", async ({ page }) => {
     await page.goto("/login");
 
-    // CardTitle is a <div> (not a semantic heading); match it specifically
-    // by its data-slot attribute to avoid strict-mode collision with the
-    // "Sign in" button text.
     await expect(
-      page.locator('[data-slot="card-title"]', { hasText: "Sign in" })
+      page.getByRole("heading", { name: /ticket management/i })
     ).toBeVisible();
     await expect(
-      page.getByText(/ticket management system/i)
+      page.getByText(/sign in to your account/i)
     ).toBeVisible();
     await expect(page.getByLabel(/email/i)).toBeVisible();
     await expect(page.getByLabel(/password/i)).toBeVisible();
@@ -203,7 +200,7 @@ test.describe("Sign out", () => {
     await page.waitForURL("/login");
 
     await expect(
-      page.locator('[data-slot="card-title"]', { hasText: "Sign in" })
+      page.getByText(/sign in to your account/i)
     ).toBeVisible();
   });
 

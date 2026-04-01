@@ -7,12 +7,12 @@ import { RiLoaderLine } from "@remixicon/react";
 import { authClient } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { ErrorAlert } from "@/components/ErrorAlert";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 
 const loginSchema = z.object({
-  email: z.email("Invalid email address").min(1, "Email is required"),
+  email: z.email("Email is required"),
   password: z.string().min(1, "Password is required"),
 });
 
@@ -52,72 +52,79 @@ export default function Login() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-svh p-6">
-      <Card className="w-full max-w-[380px]">
-        <CardHeader>
-          <CardTitle className="text-2xl">Sign in</CardTitle>
-          <CardDescription>Ticket Management System</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={form.handleSubmit(onSubmit)}>
-            <FieldGroup>
-              <ErrorAlert message={serverError} />
+    <div className="flex items-center justify-center min-h-svh p-6 bg-background">
+      <div className="w-full max-w-[400px] space-y-8">
+        <div className="text-center space-y-3">
+          <h1 className="font-heading text-4xl text-foreground" style={{ fontOpticalSizing: "auto" }}>
+            Welcome back
+          </h1>
+          <p className="text-sm text-muted-foreground">Sign in to your workspace</p>
+        </div>
+        <Card className="rounded-2xl shadow-sm shadow-border/40">
+          <CardHeader className="pb-0" />
+          <CardContent>
+            <form onSubmit={form.handleSubmit(onSubmit)}>
+              <FieldGroup>
+                <ErrorAlert message={serverError} />
 
-              <Controller
-                name="email"
-                control={form.control}
-                render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid || undefined}>
-                    <FieldLabel htmlFor={field.name}>Email</FieldLabel>
-                    <Input
-                      {...field}
-                      id={field.name}
-                      type="email"
-                      placeholder="admin@example.com"
-                      aria-invalid={fieldState.invalid}
-                    />
-                    {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
-                  </Field>
-                )}
-              />
+                <Controller
+                  name="email"
+                  control={form.control}
+                  render={({ field, fieldState }) => (
+                    <Field data-invalid={fieldState.invalid || undefined}>
+                      <FieldLabel htmlFor={field.name}>Email</FieldLabel>
+                      <Input
+                        {...field}
+                        id={field.name}
+                        type="email"
+                        placeholder="admin@example.com"
+                        aria-invalid={fieldState.invalid}
+                        className="rounded-xl"
+                      />
+                      {fieldState.invalid && (
+                        <FieldError errors={[fieldState.error]} />
+                      )}
+                    </Field>
+                  )}
+                />
 
-              <Controller
-                name="password"
-                control={form.control}
-                render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid || undefined}>
-                    <FieldLabel htmlFor={field.name}>Password</FieldLabel>
-                    <Input
-                      {...field}
-                      id={field.name}
-                      type="password"
-                      placeholder="Password"
-                      aria-invalid={fieldState.invalid}
-                    />
-                    {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
-                  </Field>
-                )}
-              />
+                <Controller
+                  name="password"
+                  control={form.control}
+                  render={({ field, fieldState }) => (
+                    <Field data-invalid={fieldState.invalid || undefined}>
+                      <FieldLabel htmlFor={field.name}>Password</FieldLabel>
+                      <Input
+                        {...field}
+                        id={field.name}
+                        type="password"
+                        placeholder="Password"
+                        aria-invalid={fieldState.invalid}
+                        className="rounded-xl"
+                      />
+                      {fieldState.invalid && (
+                        <FieldError errors={[fieldState.error]} />
+                      )}
+                    </Field>
+                  )}
+                />
 
-              <Button
-                type="submit"
-                size="lg"
-                className="w-full"
-                disabled={form.formState.isSubmitting}
-              >
-                {form.formState.isSubmitting && (
-                  <RiLoaderLine className="animate-spin" />
-                )}
-                {form.formState.isSubmitting ? "Signing in..." : "Sign in"}
-              </Button>
-            </FieldGroup>
-          </form>
-        </CardContent>
-      </Card>
+                <Button
+                  type="submit"
+                  size="lg"
+                  className="w-full mt-2 rounded-xl"
+                  disabled={form.formState.isSubmitting}
+                >
+                  {form.formState.isSubmitting && (
+                    <RiLoaderLine className="animate-spin" />
+                  )}
+                  {form.formState.isSubmitting ? "Signing in..." : "Sign in"}
+                </Button>
+              </FieldGroup>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

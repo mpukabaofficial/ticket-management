@@ -22,19 +22,37 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Ticket } from "@/types/ticket";
 
-function statusVariant(status: TicketStatusType) {
-  switch (status) {
-    case TicketStatus.OPEN:
-      return "default";
-    case TicketStatus.RESOLVED:
-      return "secondary";
-    case TicketStatus.CLOSED:
-      return "outline";
-  }
+function StatusBadge({ status }: { status: TicketStatusType }) {
+  const styles: Record<string, string> = {
+    [TicketStatus.OPEN]: "bg-primary/10 text-primary border-primary/20",
+    [TicketStatus.RESOLVED]: "bg-emerald-50 text-emerald-700 border-emerald-200",
+    [TicketStatus.CLOSED]: "bg-muted text-muted-foreground border-border",
+  };
+  const cls = styles[status] ?? "bg-muted text-muted-foreground border-border";
+
+  return (
+    <span className={`inline-flex items-center px-2.5 py-0.5 text-xs font-medium rounded-xl border ${cls}`}>
+      {status}
+    </span>
+  );
+}
+
+function CategoryBadge({ category }: { category: string }) {
+  const styles: Record<string, string> = {
+    TECHNICAL: "bg-sky-50 text-sky-700 border-sky-200",
+    REFUND: "bg-amber-50 text-amber-700 border-amber-200",
+    GENERAL: "bg-stone-100 text-stone-600 border-stone-200",
+  };
+  const cls = styles[category] ?? "bg-stone-100 text-stone-600 border-stone-200";
+
+  return (
+    <span className={`inline-flex items-center px-2.5 py-0.5 text-xs font-medium rounded-xl border ${cls}`}>
+      {category}
+    </span>
+  );
 }
 
 const columns: ColumnDef<Ticket>[] = [
@@ -42,7 +60,7 @@ const columns: ColumnDef<Ticket>[] = [
     accessorKey: "id",
     header: "#",
     cell: ({ row }) => (
-      <span className="text-muted-foreground">{row.getValue("id")}</span>
+      <span className="text-muted-foreground tabular-nums">{row.getValue("id")}</span>
     ),
   },
   {
@@ -51,7 +69,7 @@ const columns: ColumnDef<Ticket>[] = [
     cell: ({ row }) => (
       <Link
         to={`/tickets/${row.original.id}`}
-        className="font-medium"
+        className="font-medium text-foreground hover:text-primary transition-colors"
       >
         {row.getValue("subject")}
       </Link>
@@ -72,9 +90,9 @@ const columns: ColumnDef<Ticket>[] = [
     cell: ({ row }) => {
       const category = row.getValue("category") as string | null;
       return category ? (
-        <Badge variant="secondary">{category}</Badge>
+        <CategoryBadge category={category} />
       ) : (
-        <span className="text-muted-foreground">—</span>
+        <span className="text-muted-foreground/40">—</span>
       );
     },
   },
@@ -82,16 +100,14 @@ const columns: ColumnDef<Ticket>[] = [
     accessorKey: "status",
     header: "Status",
     cell: ({ row }) => (
-      <Badge variant={statusVariant(row.getValue("status"))}>
-        {row.getValue("status") as string}
-      </Badge>
+      <StatusBadge status={row.getValue("status")} />
     ),
   },
   {
     accessorKey: "createdAt",
     header: "Created",
     cell: ({ row }) => (
-      <span className="text-muted-foreground">
+      <span className="text-muted-foreground tabular-nums">
         {new Date(row.getValue("createdAt") as string).toLocaleDateString(
           undefined,
           { year: "numeric", month: "short", day: "numeric" },
@@ -167,7 +183,7 @@ export default function TicketsTable({
 
   if (tickets?.length === 0) {
     return (
-      <p className="text-sm text-muted-foreground text-center py-6">
+      <p className="text-sm text-muted-foreground text-center py-10">
         No tickets found.
       </p>
     );
@@ -194,14 +210,14 @@ export default function TicketsTable({
                     header.getContext(),
                   )}
                   {header.column.getIsSorted() === "asc" && (
-                    <RiArrowUpSLine className="size-4" />
+                    <RiArrowUpSLine className="size-4 text-primary" />
                   )}
                   {header.column.getIsSorted() === "desc" && (
-                    <RiArrowDownSLine className="size-4" />
+                    <RiArrowDownSLine className="size-4 text-primary" />
                   )}
                   {header.column.getCanSort() &&
                     !header.column.getIsSorted() && (
-                      <RiArrowUpDownLine className="size-4 text-muted-foreground/50" />
+                      <RiArrowUpDownLine className="size-4 text-muted-foreground/30" />
                     )}
                 </div>
               </TableHead>
@@ -211,7 +227,7 @@ export default function TicketsTable({
       </TableHeader>
       <TableBody>
         {table.getRowModel().rows.map((row) => (
-          <TableRow key={row.id}>
+          <TableRow key={row.id} className="hover:bg-accent/50 transition-colors">
             {row.getVisibleCells().map((cell) => (
               <TableCell key={cell.id}>
                 {flexRender(

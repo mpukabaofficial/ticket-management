@@ -233,6 +233,55 @@ export async function addMessage(
   });
 }
 
+interface StatsRow {
+  totalTickets: bigint;
+  openTickets: bigint;
+  resolvedTickets: bigint;
+  aiResolvedTickets: bigint;
+  aiResolvedPercentage: number;
+  avgResolutionTimeMs: bigint;
+  dailyDate: Date;
+  dailyAi: bigint;
+  dailyAgent: bigint;
+  dailyUnresolved: bigint;
+}
+
+export async function getTicketStats() {
+  const now = new Date();
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+  const rows = await prisma.$queryRaw<StatsRow[]>`
+    SELECT * FROM get_ticket_stats(${monthStart})
+  `;
+
+  if (rows.length === 0) {
+    return {
+      totalTickets: 0,
+      openTickets: 0,
+      aiResolvedTickets: 0,
+      aiResolvedPercentage: 0,
+      avgResolutionTimeMs: 0,
+      dailyResolutions: [],
+    };
+  }
+
+  const first = rows[0]!;
+
+  return {
+    totalTickets: Number(first.totalTickets),
+    openTickets: Number(first.openTickets),
+    aiResolvedTickets: Number(first.aiResolvedTickets),
+    aiResolvedPercentage: first.aiResolvedPercentage,
+    avgResolutionTimeMs: Number(first.avgResolutionTimeMs),
+    dailyResolutions: rows.map((row) => ({
+      date: row.dailyDate.toISOString().split("T")[0],
+      ai: Number(row.dailyAi),
+      agent: Number(row.dailyAgent),
+      unresolved: Number(row.dailyUnresolved),
+    })),
+  };
+}
+
 export class TicketError extends Error {
   constructor(message: string, public statusCode: number) {
     super(message);

@@ -1,1 +1,1 @@
-export type { Ticket, TicketWithMessages, Message } from "shared";
+export type { Ticket, TicketWithMessages, Message, TicketStats } from "shared";

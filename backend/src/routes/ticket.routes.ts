@@ -1,9 +1,10 @@
 import { Router } from "express";
 import { requireAuth } from "../middleware/auth";
-import { listTickets, showTicket, update, createFromEmail, assign, createMessage, polishReply, summarizeTicket } from "../controllers/ticket.controller";
+import { stats, listTickets, showTicket, update, createFromEmail, assign, createMessage, polishReply, summarizeTicket } from "../controllers/ticket.controller";
 
 const router = Router();
 
+router.get("/stats", requireAuth, stats);
 router.get("/", requireAuth, listTickets);
 router.get("/:id", requireAuth, showTicket);
 router.patch("/:id", requireAuth, update);

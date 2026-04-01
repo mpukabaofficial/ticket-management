@@ -23,3 +23,19 @@ export interface Ticket {
 export interface TicketWithMessages extends Ticket {
   messages: Message[];
 }
+
+export interface DailyResolution {
+  date: string;
+  ai: number;
+  agent: number;
+  unresolved: number;
+}
+
+export interface TicketStats {
+  totalTickets: number;
+  openTickets: number;
+  aiResolvedTickets: number;
+  aiResolvedPercentage: number;
+  avgResolutionTimeMs: number;
+  dailyResolutions: DailyResolution[];
+}

@@ -9,6 +9,7 @@ const mockMessages: TicketWithMessages["messages"] = [
     body: "I need help with my account",
     sender: "Jane Student",
     senderType: "CUSTOMER",
+    isAiGenerated: false,
     createdAt: "2025-03-20T10:00:00.000Z",
   },
   {
@@ -16,6 +17,7 @@ const mockMessages: TicketWithMessages["messages"] = [
     body: "Sure, let me look into it",
     sender: "Agent Smith",
     senderType: "AGENT",
+    isAiGenerated: false,
     createdAt: "2025-03-20T11:00:00.000Z",
   },
 ];

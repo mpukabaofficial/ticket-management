@@ -5,12 +5,18 @@ import { inboundEmailSchema, ticketListQuerySchema, updateTicketSchema, createMe
 import {
   getTickets,
   getTicketById,
+  getTicketStats,
   updateTicket,
   handleInboundEmail,
   assignTicket,
   addMessage,
 } from "../services/ticket.service";
 import { validate, parseIntParam } from "../utils/validate";
+
+export async function stats(_req: Request, res: Response) {
+  const data = await getTicketStats();
+  res.json(data);
+}
 
 export async function listTickets(req: Request, res: Response) {
   const query = validate(ticketListQuerySchema, req.query, res);

@@ -154,6 +154,7 @@ docker-compose.yml      — Docker services (dev Postgres, test Postgres, backen
 - `POST /api/users` — admin only, create user (validates with `createUserSchema`)
 - `PUT /api/users/:id` — admin only, update user (validates with `editUserSchema`)
 - `DELETE /api/users/:id` — admin only, soft-delete user (revokes sessions)
+- `GET /api/tickets/stats` — protected, returns dashboard statistics (total, open, AI-resolved count/percentage, avg resolution time)
 - `GET /api/tickets` — protected (any authenticated user), returns `{ tickets }`
 - `GET /api/tickets/:id` — protected, returns `{ ticket }` with messages
 - `PATCH /api/tickets/:id` — protected, update ticket status/category

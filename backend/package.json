@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "bun --watch src/server.ts",
     "start": "bun src/server.ts",
+    "start:prod": "bunx prisma migrate deploy --schema=prisma/schema.prisma && bun src/server.ts",
     "db:generate": "bunx prisma generate",
     "db:migrate": "bunx prisma migrate dev",
     "db:seed": "bun prisma/seed.ts",

@@ -1,0 +1,17 @@
+node_modules
+.git
+.env
+.env.*
+!.env.example
+README.md
+CLAUDE.md
+project-scope.md
+tech-stack.md
+dist
+frontend/dist
+.vscode
+.idea
+*.log
+playwright-report
+test-results
+frontend/e2e

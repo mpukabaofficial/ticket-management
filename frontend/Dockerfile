@@ -27,7 +27,8 @@ RUN bun run build
 
 FROM nginx:alpine
 COPY --from=build /app/frontend/dist /usr/share/nginx/html
-COPY --from=build /app/frontend/nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=build /app/frontend/nginx.conf /etc/nginx/conf.d/default.conf.template
 
+ENV PORT=80
 EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["/bin/sh", "-c", "envsubst '${PORT}' < /etc/nginx/conf.d/default.conf.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"]

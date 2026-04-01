@@ -77,7 +77,6 @@ export default function TicketReplyForm({ ticket }: TicketReplyFormProps) {
             name="body"
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid || undefined}>
-                <FieldLabel htmlFor={field.name}>Message</FieldLabel>
                 <Textarea
                   {...field}
                   id={field.name}

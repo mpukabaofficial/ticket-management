@@ -9,7 +9,6 @@ const DUPLICATE_WINDOW_MS = 5 * 60 * 1000; // 5 minutes
 const ticketSelect = {
   id: true,
   subject: true,
-  body: true,
   status: true,
   category: true,
   senderEmail: true,
@@ -150,7 +149,6 @@ export async function handleInboundEmail(
   return prisma.ticket.create({
     data: {
       subject,
-      body: cleanBody,
       senderEmail: from,
       senderName,
       messages: {

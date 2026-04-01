@@ -97,3 +97,31 @@ export async function polishReply(req: Request, res: Response) {
 
   res.json({ polished: text });
 }
+
+export async function summarizeTicket(req: Request, res: Response) {
+  const id = parseIntParam(req.params.id, res, "ticket ID");
+  if (!id) return;
+
+  const ticket = await getTicketById(id);
+
+  const conversation = ticket.messages
+    .map((m) => `[${m.senderType}] ${m.sender}: ${m.body}`)
+    .join("\n\n");
+
+  const { text } = await generateText({
+    model: openai("gpt-5-nano"),
+    system:
+      "You are a support agent for Code with Mosh (https://codewithmosh.com), an online school. " +
+      "Summarize the following support ticket in 2-4 sentences. " +
+      "Cover the core issue and current resolution state. Be brief and direct. " +
+      "Return only the summary, nothing else.",
+    prompt:
+      `Ticket #${ticket.id}: ${ticket.subject}\n` +
+      `Customer: ${ticket.senderName} (${ticket.senderEmail})\n` +
+      `Status: ${ticket.status}\n` +
+      `Category: ${ticket.category ?? "None"}\n\n` +
+      `Conversation:\n${conversation}`,
+  });
+
+  res.json({ summary: text });
+}

@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import TicketMessages from "@/components/TicketMessages";
 import TicketReplyForm from "@/components/TicketReplyForm";
 import TicketDetailsSidebar from "@/components/TicketDetailsSidebar";
+import TicketSummary from "@/components/TicketSummary";
 import type { TicketWithMessages } from "@/types/ticket";
 
 function formatDate(date: string) {
@@ -100,6 +101,7 @@ export default function TicketDetailPage() {
               category={ticket.category}
               assignedTo={ticket.assignedTo}
             />
+            <TicketSummary ticketId={ticket.id} />
           </div>
         </div>
       ) : null}

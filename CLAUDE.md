@@ -137,7 +137,7 @@ docker-compose.yml      — Docker services (dev Postgres, test Postgres, backen
 - **Enums:** `Role` (ADMIN, AGENT), `TicketStatus` (OPEN, RESOLVED, CLOSED), `TicketCategory` (GENERAL, TECHNICAL, REFUND), `SenderType` (CUSTOMER, AGENT)
 - **User** — Better Auth managed + custom `role` field + `deletedAt` (soft delete); relations to sessions, accounts, tickets, messages
 - **Session / Account / Verification** — Better Auth managed tables
-- **Ticket** — Auto-increment Int PK, `status` (default: OPEN), `category` (optional), `senderEmail` + `senderName` (external), optional `assignedToId` → User
+- **Ticket** — Auto-increment Int PK, `status` (default: OPEN), `category` (optional), `senderEmail` + `senderName` (external), optional `assignedToId` → User. No `body` field — the initial message content is stored only in the first Message row.
 - **Message** — UUID PK, `sender` (string, not FK — can be AI/agent/external), `senderType` (CUSTOMER or AGENT), `ticketId` (Int), optional `userId` → User
 - **Cascade deletes:** User→Sessions, User→Accounts, Ticket→Messages
 - **Soft delete:** Users have `deletedAt DateTime?` — soft-deleted users have sessions revoked and assigned tickets unassigned
@@ -155,6 +155,7 @@ docker-compose.yml      — Docker services (dev Postgres, test Postgres, backen
 - `PATCH /api/tickets/:id` — protected, update ticket status/category
 - `PATCH /api/tickets/:id/assign` — protected, assign ticket to agent
 - `POST /api/tickets/:id/messages` — protected, add agent reply to ticket
+- `POST /api/tickets/:id/summarize` — protected, generate AI summary of ticket and conversation history via GPT-5-nano
 - `POST /api/tickets/polish` — protected, polish agent reply text via GPT-5-nano (validates with `polishReplySchema`)
 - `POST /api/tickets/email` — **public** (no auth — webhook endpoint), creates ticket or threads reply onto existing open ticket by matching sender email + subject. HTML bodies are stripped to plain text via `stripHtml()` before storage.
 - `/api/auth/*` — Better Auth endpoints (sign-in, sign-out, session, etc.)

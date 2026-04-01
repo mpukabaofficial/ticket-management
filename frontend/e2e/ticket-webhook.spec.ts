@@ -47,7 +47,6 @@ test.describe("POST /api/tickets/email — happy path", () => {
     expect(ticket.senderEmail).toBe("happypath@example.com");
     expect(ticket.senderName).toBe("Happy Student");
     expect(ticket.subject).toBe("Happy path test subject");
-    expect(ticket.body).toBe("This is the message body.");
     expect(ticket.assignedTo).toBeNull();
     expect(ticket.id).toBeGreaterThan(0);
     expect(typeof ticket.createdAt).toBe("string");

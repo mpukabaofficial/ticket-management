@@ -11,7 +11,6 @@ export interface Message {
 export interface Ticket {
   id: number;
   subject: string;
-  body: string;
   status: TicketStatus;
   category: TicketCategory | null;
   senderEmail: string;

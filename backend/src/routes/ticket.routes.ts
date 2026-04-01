@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { requireAuth } from "../middleware/auth";
-import { listTickets, showTicket, update, createFromEmail, assign, createMessage, polishReply } from "../controllers/ticket.controller";
+import { listTickets, showTicket, update, createFromEmail, assign, createMessage, polishReply, summarizeTicket } from "../controllers/ticket.controller";
 
 const router = Router();
 
@@ -10,6 +10,7 @@ router.patch("/:id", requireAuth, update);
 router.post("/email", createFromEmail);
 router.patch("/:id/assign", requireAuth, assign);
 router.post("/:id/messages", requireAuth, createMessage);
+router.post("/:id/summarize", requireAuth, summarizeTicket);
 router.post("/polish", requireAuth, polishReply);
 
 export default router;

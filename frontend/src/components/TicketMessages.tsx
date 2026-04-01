@@ -74,6 +74,9 @@ export default function TicketMessages({ messages }: TicketMessagesProps) {
                     >
                       {capitalize(message.senderType)}
                     </Badge>
+                    {message.isAiGenerated && (
+                      <Badge variant="outline">AI</Badge>
+                    )}
                   </div>
                   <span className="text-xs text-muted-foreground">
                     {formatDate(message.createdAt)}

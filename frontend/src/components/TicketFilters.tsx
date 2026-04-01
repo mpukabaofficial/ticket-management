@@ -1,4 +1,4 @@
-import { TicketStatus, TicketCategory } from "shared";
+import { AgentVisibleStatuses, TicketCategory } from "shared";
 import { RiSearchLine } from "@remixicon/react";
 import { Input } from "@/components/ui/input";
 import {
@@ -51,7 +51,7 @@ export default function TicketFilters({
         </SelectTrigger>
         <SelectContent>
           <SelectItem value={ALL}>All statuses</SelectItem>
-          {Object.values(TicketStatus).map((s) => (
+          {AgentVisibleStatuses.map((s) => (
             <SelectItem key={s} value={s}>
               {capitalize(s)}
             </SelectItem>

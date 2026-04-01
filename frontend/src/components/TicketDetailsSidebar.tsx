@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { toast } from "sonner";
-import { TicketStatus, TicketCategory } from "shared";
+import { AgentVisibleStatuses, TicketCategory } from "shared";
 import type { TicketStatusType, TicketCategoryType } from "shared";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -114,7 +114,7 @@ export default function TicketDetailsSidebar({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {Object.values(TicketStatus).map((s) => (
+                {AgentVisibleStatuses.map((s) => (
                   <SelectItem key={s} value={s}>
                     {capitalize(s)}
                   </SelectItem>

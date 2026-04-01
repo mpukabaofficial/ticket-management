@@ -13,6 +13,8 @@ enum Role {
 }
 
 enum TicketStatus {
+  NEW
+  PROCESSING
   OPEN
   RESOLVED
   CLOSED
@@ -87,7 +89,7 @@ model Verification {
 model Ticket {
   id          Int             @id @default(autoincrement())
   subject     String
-  status      TicketStatus    @default(OPEN)
+  status      TicketStatus    @default(NEW)
   category    TicketCategory?
   senderEmail String
   senderName  String
@@ -101,11 +103,12 @@ model Ticket {
 }
 
 model Message {
-  id         String     @id @default(uuid())
-  body       String
-  sender     String
-  senderType SenderType
-  createdAt  DateTime   @default(now())
+  id            String     @id @default(uuid())
+  body          String
+  sender        String
+  senderType    SenderType
+  isAiGenerated Boolean    @default(false)
+  createdAt     DateTime   @default(now())
 
   ticketId Int
   ticket   Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)

@@ -42,7 +42,7 @@ test.describe("POST /api/tickets/email — happy path", () => {
     expect(json).toHaveProperty("ticket");
 
     const { ticket } = json;
-    expect(ticket.status).toBe("OPEN");
+    expect(ticket.status).toBe("NEW");
     expect(ticket.category).toBeNull();
     expect(ticket.senderEmail).toBe("happypath@example.com");
     expect(ticket.senderName).toBe("Happy Student");

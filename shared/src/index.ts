@@ -6,7 +6,7 @@ export {
 } from "./schemas/user";
 export { Role } from "./constants/role";
 export type { Role as RoleType } from "./constants/role";
-export { TicketStatus, TicketCategory, SenderType } from "./constants/ticket";
+export { TicketStatus, TicketCategory, SenderType, AgentVisibleStatuses } from "./constants/ticket";
 export type {
   TicketStatus as TicketStatusType,
   TicketCategory as TicketCategoryType,

@@ -4,6 +4,7 @@ import type { Prisma } from "../generated/prisma/client";
 import prisma from "../config/db";
 import boss from "../config/queue";
 import { CLASSIFY_TICKET_QUEUE } from "../jobs/classify-ticket";
+import { RESOLVE_TICKET_QUEUE } from "../jobs/resolve-ticket";
 import { stripHtml } from "../utils/strip-html";
 
 const DUPLICATE_WINDOW_MS = 5 * 60 * 1000; // 5 minutes
@@ -22,7 +23,7 @@ const ticketSelect = {
 const ticketWithMessagesSelect = {
   ...ticketSelect,
   messages: {
-    select: { id: true, body: true, sender: true, senderType: true, createdAt: true },
+    select: { id: true, body: true, sender: true, senderType: true, isAiGenerated: true, createdAt: true },
     orderBy: { createdAt: "asc" as const },
   },
 };
@@ -32,6 +33,8 @@ export async function getTickets(query: TicketListQuery) {
 
   if (query.status) {
     where.status = query.status;
+  } else {
+    where.status = { notIn: ["NEW", "PROCESSING"] };
   }
   if (query.category) {
     where.category = query.category;
@@ -164,12 +167,16 @@ export async function handleInboundEmail(
     select: ticketWithMessagesSelect,
   });
 
-  // Enqueue classification job
-  boss.send(CLASSIFY_TICKET_QUEUE, {
+  const jobData = {
     ticketId: ticket.id,
     subject: ticket.subject,
     body: ticket.messages[0]?.body ?? "",
-  });
+    senderName: ticket.senderName,
+  };
+
+  // Enqueue background jobs
+  boss.send(CLASSIFY_TICKET_QUEUE, jobData);
+  boss.send(RESOLVE_TICKET_QUEUE, jobData);
 
   return ticket;
 }
@@ -222,7 +229,7 @@ export async function addMessage(
 
   return prisma.message.create({
     data: { body, sender, senderType, userId, ticketId },
-    select: { id: true, body: true, sender: true, senderType: true, createdAt: true },
+    select: { id: true, body: true, sender: true, senderType: true, isAiGenerated: true, createdAt: true },
   });
 }
 

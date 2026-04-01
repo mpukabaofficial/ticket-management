@@ -1,10 +1,18 @@
 export const TicketStatus = {
+  NEW: "NEW",
+  PROCESSING: "PROCESSING",
   OPEN: "OPEN",
   RESOLVED: "RESOLVED",
   CLOSED: "CLOSED",
 } as const;
 
 export type TicketStatus = (typeof TicketStatus)[keyof typeof TicketStatus];
+
+export const AgentVisibleStatuses = [
+  TicketStatus.OPEN,
+  TicketStatus.RESOLVED,
+  TicketStatus.CLOSED,
+] as const;
 
 export const TicketCategory = {
   GENERAL: "GENERAL",

@@ -5,6 +5,7 @@ export interface Message {
   body: string;
   sender: string;
   senderType: SenderType;
+  isAiGenerated: boolean;
   createdAt: string;
 }
 

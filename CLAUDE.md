@@ -136,7 +136,9 @@ docker-compose.yml      — Docker services (dev Postgres, test Postgres, backen
 ```
 
 ## Database Schema
-- **Enums:** `Role` (ADMIN, AGENT), `TicketStatus` (OPEN, RESOLVED, CLOSED), `TicketCategory` (GENERAL, TECHNICAL, REFUND), `SenderType` (CUSTOMER, AGENT)
+- **Enums:** `Role` (ADMIN, AGENT), `TicketStatus` (NEW, PROCESSING, OPEN, RESOLVED, CLOSED), `TicketCategory` (GENERAL, TECHNICAL, REFUND), `SenderType` (CUSTOMER, AGENT)
+- **Ticket lifecycle:** NEW (just created) → PROCESSING (AI resolving) → RESOLVED (AI answered) or OPEN (needs human). Agents only see OPEN, RESOLVED, CLOSED via `AgentVisibleStatuses`.
+- **Auto-resolve:** `resolve-ticket` pg-boss job reads `backend/knowledge-base.md` and uses GPT-5-nano to attempt resolution. Adds an AGENT message if resolved, otherwise promotes to OPEN.
 - **User** — Better Auth managed + custom `role` field + `deletedAt` (soft delete); relations to sessions, accounts, tickets, messages
 - **Session / Account / Verification** — Better Auth managed tables
 - **Ticket** — Auto-increment Int PK, `status` (default: OPEN), `category` (optional), `senderEmail` + `senderName` (external), optional `assignedToId` → User. No `body` field — the initial message content is stored only in the first Message row.

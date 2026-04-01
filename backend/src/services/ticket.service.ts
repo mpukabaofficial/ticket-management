@@ -172,6 +172,7 @@ export async function handleInboundEmail(
     subject: ticket.subject,
     body: ticket.messages[0]?.body ?? "",
     senderName: ticket.senderName,
+    senderEmail: ticket.senderEmail,
   };
 
   // Enqueue background jobs

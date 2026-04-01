@@ -4,7 +4,7 @@
  * decodes HTML entities, and collapses whitespace.
  */
 export function stripHtml(html: string): string {
-  return (
+  const stripped = (
     html
       // Remove <style>...</style> and <script>...</script> blocks entirely
       .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "")
@@ -38,4 +38,11 @@ export function stripHtml(html: string): string {
       .replace(/\n{3,}/g, "\n\n")
       .trim()
   );
+
+  // Strip email signature (everything after "-- " on its own line)
+  const sigIndex = stripped.search(/^\s*--\s*$/m);
+  const body = sigIndex !== -1 ? stripped.slice(0, sigIndex) : stripped;
+
+  // Remove [image: ...], [photo], [cid:...] and similar bracket artifacts
+  return body.replace(/\[[^\]]*\]/g, "").replace(/\n{3,}/g, "\n\n").trim();
 }

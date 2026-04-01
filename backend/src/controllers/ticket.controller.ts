@@ -1,7 +1,11 @@
 import type { Request, Response } from "express";
 import { openai } from "@ai-sdk/openai";
 import { generateText } from "ai";
+import { Webhook } from "svix";
 import { inboundEmailSchema, ticketListQuerySchema, updateTicketSchema, createMessageSchema, polishReplySchema, SenderType } from "shared";
+import resend from "../config/resend";
+import { stripHtml } from "../utils/strip-html";
+import { sendReplyEmail } from "../services/email.service";
 import {
   getTickets,
   getTicketById,
@@ -58,6 +62,54 @@ export async function createFromEmail(req: Request, res: Response) {
   res.status(201).json({ ticket });
 }
 
+export async function createFromResend(req: Request, res: Response) {
+  const secret = process.env.RESEND_WEBHOOK_SECRET;
+  if (!secret) {
+    res.status(500).json({ error: "Webhook secret not configured" });
+    return;
+  }
+
+  const wh = new Webhook(secret);
+  const rawBody = (req as Request & { rawBody: Buffer }).rawBody;
+  const headers = {
+    "svix-id": req.headers["svix-id"] as string,
+    "svix-timestamp": req.headers["svix-timestamp"] as string,
+    "svix-signature": req.headers["svix-signature"] as string,
+  };
+
+  try {
+    wh.verify(rawBody.toString(), headers);
+  } catch {
+    res.status(401).json({ error: "Invalid webhook signature" });
+    return;
+  }
+
+  const event = req.body;
+
+  if (event.type !== "email.received") {
+    res.json({ ignored: true });
+    return;
+  }
+
+  const { email_id, from: rawFrom, subject } = event.data;
+
+  // Fetch full email content (webhook doesn't include body)
+  const { data: email, error } = await resend.emails.receiving.get(email_id);
+  if (error || !email) {
+    res.status(502).json({ error: "Failed to fetch email content" });
+    return;
+  }
+
+  // Parse sender: "Name <email>" or just "email"
+  const fromMatch = rawFrom.match(/^(.+?)\s*<(.+?)>$/);
+  const senderEmail = fromMatch ? fromMatch[2] : rawFrom;
+  const senderName = fromMatch ? fromMatch[1].trim() : senderEmail.split("@")[0];
+  const body = email.text || stripHtml(email.html || "");
+
+  const ticket = await handleInboundEmail(senderEmail, senderName, subject, body);
+  res.status(201).json({ ticket });
+}
+
 export async function assign(req: Request, res: Response) {
   const id = parseIntParam(req.params.id, res, "ticket ID");
   if (!id) return;
@@ -81,6 +133,11 @@ export async function createMessage(req: Request, res: Response) {
 
   const user = req.user!;
   const message = await addMessage(id, data.body, user.name, user.id, SenderType.AGENT);
+
+  // Send reply email to customer
+  const ticket = await getTicketById(id);
+  sendReplyEmail(ticket.senderEmail, ticket.subject, data.body);
+
   res.status(201).json({ message });
 }
 

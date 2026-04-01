@@ -17,6 +17,7 @@ AI-powered ticket management system for an online school. See `project-scope.md`
 - **AI:** Vercel AI SDK (`ai` + `@ai-sdk/openai`) — GPT-5-nano for reply polishing, summarization, and classification
 - **Job Queue:** pg-boss (PostgreSQL-backed) — background job processing for ticket classification and auto-resolution
 - **Charts:** Recharts — stacked bar charts on the dashboard
+- **Email:** Resend — inbound webhook for receiving, SDK for sending replies
 - **Deployment:** Docker + Railway
 
 ## Project Structure
@@ -165,7 +166,8 @@ docker-compose.yml      — Docker services (dev Postgres, test Postgres, backen
 - `POST /api/tickets/:id/messages` — protected, add agent reply to ticket
 - `POST /api/tickets/:id/summarize` — protected, generate AI summary of ticket and conversation history via GPT-5-nano
 - `POST /api/tickets/polish` — protected, polish agent reply text via GPT-5-nano (validates with `polishReplySchema`)
-- `POST /api/tickets/email` — **public**. Auto-classifies new tickets in the background via GPT-5-nano (fire-and-forget, best-effort). (no auth — webhook endpoint), creates ticket or threads reply onto existing open ticket by matching sender email + subject. HTML bodies are stripped to plain text via `stripHtml()` before storage.
+- `POST /api/tickets/email` — **public** (no auth — webhook endpoint), creates ticket or threads reply onto existing open ticket by matching sender email + subject. HTML bodies are stripped to plain text via `stripHtml()` before storage. Auto-classifies and auto-resolves new tickets in the background via pg-boss jobs.
+- `POST /api/tickets/email/inbound` — **public** (Resend inbound webhook), receives `email.received` events, fetches full email content via Resend API, then delegates to `handleInboundEmail`.
 - `/api/auth/*` — Better Auth endpoints (sign-in, sign-out, session, etc.)
 
 ## Key Patterns
@@ -199,7 +201,7 @@ docker-compose.yml      — Docker services (dev Postgres, test Postgres, backen
 - Frontend Nginx: SPA fallback via `try_files`, API proxy to `http://backend:3000`
 
 ## Environment Variables
-- Backend: `PORT`, `TRUSTED_ORIGINS` (comma-separated origins), `NODE_ENV`, `DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `OPENAI_API_KEY`
+- Backend: `PORT`, `TRUSTED_ORIGINS` (comma-separated origins), `NODE_ENV`, `DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `OPENAI_API_KEY`, `RESEND_API_KEY`
 - Frontend: `VITE_API_URL` (Better Auth client base URL, e.g. `http://localhost:3000`)
 - See `.env.example` files in each directory
 

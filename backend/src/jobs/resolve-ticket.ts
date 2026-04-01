@@ -5,6 +5,7 @@ import { generateText } from "ai";
 import { SenderType } from "shared";
 import type { Job } from "pg-boss";
 import prisma from "../config/db";
+import { sendReplyEmail } from "../services/email.service";
 
 export const RESOLVE_TICKET_QUEUE = "resolve-ticket";
 
@@ -18,10 +19,11 @@ export interface ResolveTicketData {
   subject: string;
   body: string;
   senderName: string;
+  senderEmail: string;
 }
 
 export async function resolveTicketHandler([job]: Job<ResolveTicketData>[]) {
-  const { ticketId, subject, body, senderName } = job!.data;
+  const { ticketId, subject, body, senderName, senderEmail } = job!.data;
   const firstName = senderName.split(" ")[0];
 
   await prisma.ticket.update({
@@ -80,5 +82,7 @@ export async function resolveTicketHandler([job]: Job<ResolveTicketData>[]) {
         data: { status: "RESOLVED" },
       }),
     ]);
+
+    sendReplyEmail(senderEmail, subject, answer);
   }
 }

@@ -33,7 +33,9 @@
     "helmet": "^8.1.0",
     "pg-boss": "^12.15.0",
     "prisma": "^7.6.0",
+    "resend": "^6.10.0",
     "shared": "workspace:*",
+    "svix": "^1.89.0",
     "zod": "^4.3.6"
   }
 }

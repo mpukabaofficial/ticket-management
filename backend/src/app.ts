@@ -35,6 +35,13 @@ if (config.nodeEnv === "production") {
 // Better Auth handler MUST be before express.json()
 app.all("/api/auth/*splat", toNodeHandler(auth));
 
+// Capture raw body for Resend webhook verification
+app.use("/api/tickets/email/inbound", express.json({
+  verify: (req, _res, buf) => {
+    (req as express.Request & { rawBody: Buffer }).rawBody = buf;
+  },
+}));
+
 app.use(express.json());
 
 app.use("/api", routes);

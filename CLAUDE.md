@@ -31,6 +31,7 @@ backend/
     controllers/        — Route handlers (user.controller.ts, ticket.controller.ts)
     services/           — Business logic (user.service.ts, ticket.service.ts)
     utils/validate.ts   — Shared Zod validation + `parseIntParam()` helper for controllers
+    utils/strip-html.ts — Strip HTML tags from inbound email bodies to plain text
     types/express.d.ts  — Express type augmentation
   prisma/
     schema.prisma       — Database schema (includes Better Auth tables + role field)
@@ -44,8 +45,8 @@ frontend/
   src/
     index.css           — Tailwind imports + shadcn theme variables
     pages/              — Login, Dashboard, Users, Tickets, TicketDetail, NotFound
-    components/         — PrivateRoute, AdminRoute, UsersTable, UserFormDialog, ErrorAlert
-    components/ui/      — shadcn/ui components (alert, alert-dialog, badge, button, card, checkbox, dialog, field, input, label, separator, skeleton, sonner, table, textarea)
+    components/         — PrivateRoute, AdminRoute, UsersTable, UserFormDialog, ErrorAlert, TicketsTable, TicketMessages, TicketReplyForm, TicketDetailsSidebar, TicketFilters, Pagination
+    components/ui/      — shadcn/ui components (alert, alert-dialog, badge, button, card, checkbox, dialog, field, input, label, select, separator, skeleton, sonner, table, textarea)
     layouts/            — MainLayout (navbar + sign-out)
     lib/auth-client.ts  — Better Auth client instance
     lib/utils.ts        — cn() helper (clsx + tailwind-merge)
@@ -56,6 +57,7 @@ shared/
     index.ts            — Package entry point (re-exports all schemas, enums, types)
     schemas/            — Zod validation schemas (user.ts, ticket.ts)
     constants/          — Shared enums (role.ts, ticket.ts)
+    types/              — Shared API response types (ticket.ts: Ticket, TicketWithMessages, Message)
 docker-compose.yml      — Docker services (dev Postgres, test Postgres, backend, frontend)
 ```
 
@@ -74,7 +76,9 @@ docker-compose.yml      — Docker services (dev Postgres, test Postgres, backen
 - `cd frontend && bun run test:watch` — run component tests in watch mode
 - **Always write unit tests** for new features and components unless explicitly told not to
 - Component test files live next to their source: `Component.test.tsx` alongside `Component.tsx`
-- Mock axios with `vi.mock("axios")`, wrap components in `QueryClientProvider` with `retry: false`
+- Mock axios with `vi.mock("axios")`, wrap components in `QueryClientProvider` with `retry: false`. Wrap in `MemoryRouter` if the component uses `<Link>` or router hooks.
+- **Backend tests:** Bun's built-in test runner (`bun test`) for pure utility functions (e.g. `strip-html.test.ts`)
+- `cd backend && bun test` — run backend unit tests
 - **E2E tests:** Always use the `e2e-test-writer` agent to write Playwright tests — do not write E2E tests directly
 - **E2E vs unit test boundary:** E2E tests should only cover behaviour that requires a running backend and database (e.g., ticket creation happy path, duplicate detection across requests, auth flows). Schema/validation logic (trimming, max length, missing fields, invalid input) must be covered by unit tests instead — do not duplicate these in E2E.
 - **E2E backend URL:** Use `BACKEND_URL` from `frontend/e2e/constants.ts` — never hardcode `localhost:3001` in test files. The port is configured in `playwright.config.ts` via `BACKEND_PORT`.
@@ -135,7 +139,7 @@ docker-compose.yml      — Docker services (dev Postgres, test Postgres, backen
 - **Ticket** — Auto-increment Int PK, `status` (default: OPEN), `category` (optional), `senderEmail` + `senderName` (external), optional `assignedToId` → User
 - **Message** — UUID PK, `sender` (string, not FK — can be AI/agent/external), `senderType` (CUSTOMER or AGENT), `ticketId` (Int), optional `userId` → User
 - **Cascade deletes:** User→Sessions, User→Accounts, Ticket→Messages
-- **Soft delete:** Users have `deletedAt DateTime?` — soft-deleted users have sessions revoked
+- **Soft delete:** Users have `deletedAt DateTime?` — soft-deleted users have sessions revoked and assigned tickets unassigned
 - Prisma client generated to `backend/src/generated/prisma/client` (gitignored, regenerate with `bun run db:generate`)
 
 ## API Routes
@@ -150,7 +154,7 @@ docker-compose.yml      — Docker services (dev Postgres, test Postgres, backen
 - `PATCH /api/tickets/:id` — protected, update ticket status/category
 - `PATCH /api/tickets/:id/assign` — protected, assign ticket to agent
 - `POST /api/tickets/:id/messages` — protected, add agent reply to ticket
-- `POST /api/tickets/email` — **public** (no auth — webhook endpoint), creates ticket or threads reply onto existing open ticket by matching sender email + subject
+- `POST /api/tickets/email` — **public** (no auth — webhook endpoint), creates ticket or threads reply onto existing open ticket by matching sender email + subject. HTML bodies are stripped to plain text via `stripHtml()` before storage.
 - `/api/auth/*` — Better Auth endpoints (sign-in, sign-out, session, etc.)
 
 ## Key Patterns
@@ -161,6 +165,7 @@ docker-compose.yml      — Docker services (dev Postgres, test Postgres, backen
 - **Shared Zod schemas:** Define all Zod validation schemas in the `shared` package (`shared/src/schemas/`), import from `"shared"` in both backend and frontend. Use `zod/v4` for imports in schema files. Export all schemas through `shared/src/index.ts`.
 - **Zod v4 format validators:** Use `z.email()`, `z.url()`, `z.uuid()`, `z.iso.datetime()` etc. as top-level constructors — NOT `.email()`, `.url()` string methods, which are deprecated in Zod v4.
 - **Shared enums/constants:** Use enums from `shared/src/constants/` (imported via `"shared"`) instead of magic strings. Examples: `Role.ADMIN`, `TicketStatus.OPEN`, `SenderType.AGENT`. Define all shared enums in `shared/src/constants/`.
+- **Shared API response types:** Define TypeScript interfaces for API responses in `shared/src/types/` (e.g. `Ticket`, `TicketWithMessages`, `Message`). Frontend re-exports from `frontend/src/types/ticket.ts` — never define duplicate interfaces locally.
 - Prisma uses the `@prisma/adapter-pg` driver adapter (not the default Prisma engine)
 - **Forms:** React Hook Form + Zod via `zodResolver`, using shadcn `Controller` + `Field` + `FieldLabel` + `Input` + `FieldError` pattern (see Login.tsx for reference)
 - **Import alias:** `@/*` maps to `frontend/src/*` (configured in tsconfig + vite.config.ts)

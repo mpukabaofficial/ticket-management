@@ -1,5 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { MemoryRouter } from "react-router";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import axios from "axios";
 import { TicketStatus } from "shared";
@@ -13,7 +14,9 @@ function renderWithQuery(ui: React.ReactElement) {
     defaultOptions: { queries: { retry: false } },
   });
   return render(
-    <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>
+    <QueryClientProvider client={queryClient}>
+      <MemoryRouter>{ui}</MemoryRouter>
+    </QueryClientProvider>
   );
 }
 
@@ -68,7 +71,7 @@ describe("Tickets page", () => {
   });
 
   it("renders ticket data in the table", async () => {
-    mockedAxios.get.mockResolvedValue({ data: { tickets: mockTickets, total: 2, page: 1, pageSize: 20 } });
+    mockedAxios.get.mockResolvedValue({ data: { tickets: mockTickets, total: 2, page: 1, pageSize: 10 } });
     renderWithQuery(<Tickets />);
 
     expect(
@@ -84,7 +87,7 @@ describe("Tickets page", () => {
   });
 
   it("shows dash for tickets without category", async () => {
-    mockedAxios.get.mockResolvedValue({ data: { tickets: mockTickets, total: 2, page: 1, pageSize: 20 } });
+    mockedAxios.get.mockResolvedValue({ data: { tickets: mockTickets, total: 2, page: 1, pageSize: 10 } });
     renderWithQuery(<Tickets />);
 
     await screen.findByText("Refund request");
@@ -92,7 +95,7 @@ describe("Tickets page", () => {
   });
 
   it("shows empty state when no tickets are returned", async () => {
-    mockedAxios.get.mockResolvedValue({ data: { tickets: [], total: 0, page: 1, pageSize: 20 } });
+    mockedAxios.get.mockResolvedValue({ data: { tickets: [], total: 0, page: 1, pageSize: 10 } });
     renderWithQuery(<Tickets />);
 
     expect(await screen.findByText("No tickets found.")).toBeInTheDocument();
@@ -122,7 +125,7 @@ describe("Tickets page", () => {
           category: undefined,
           search: undefined,
           page: 1,
-          pageSize: 20,
+          pageSize: 10,
         },
       })
     );

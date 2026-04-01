@@ -1,5 +1,7 @@
 import type { Request, Response } from "express";
-import { inboundEmailSchema, ticketListQuerySchema, updateTicketSchema, createMessageSchema, SenderType } from "shared";
+import { openai } from "@ai-sdk/openai";
+import { generateText } from "ai";
+import { inboundEmailSchema, ticketListQuerySchema, updateTicketSchema, createMessageSchema, polishReplySchema, SenderType } from "shared";
 import {
   getTickets,
   getTicketById,
@@ -74,4 +76,24 @@ export async function createMessage(req: Request, res: Response) {
   const user = req.user!;
   const message = await addMessage(id, data.body, user.name, user.id, SenderType.AGENT);
   res.status(201).json({ message });
+}
+
+export async function polishReply(req: Request, res: Response) {
+  const data = validate(polishReplySchema, req.body, res);
+  if (!data) return;
+
+  const { text } = await generateText({
+    model: openai("gpt-5-nano"),
+    system:
+      "You are a helpful support agent for Code with Mosh (https://codewithmosh.com), an online school. " +
+      "Polish the following reply to make it more professional, clear, and friendly. " +
+      "Keep the same meaning and intent. " +
+      `Address the customer by their name: ${data.customerName}. ` +
+      "Always include a greeting at the start (e.g. 'Hi [Name],') and a professional sign-off at the end. " +
+      "Include the link https://codewithmosh.com where relevant for directing the customer to resources. " +
+      "Return only the polished text, nothing else.",
+    prompt: data.body,
+  });
+
+  res.json({ polished: text });
 }

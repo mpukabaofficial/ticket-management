@@ -16,5 +16,4 @@ router.get("/me", requireAuth, (req, res) => {
 
 router.use("/users", userRoutes);
 router.use("/tickets", ticketRoutes);
-
 export default router;

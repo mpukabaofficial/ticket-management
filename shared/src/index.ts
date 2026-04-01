@@ -24,4 +24,6 @@ export {
   type UpdateTicketInput,
   createMessageSchema,
   type CreateMessageInput,
+  polishReplySchema,
+  type PolishReplyInput,
 } from "./schemas/ticket";

@@ -89,7 +89,7 @@ export default function TicketDetailPage() {
             </Card>
 
             <TicketMessages messages={ticket.messages} />
-            <TicketReplyForm ticketId={id!} />
+            <TicketReplyForm ticket={ticket} />
           </div>
 
           {/* Right column — actions */}

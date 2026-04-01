@@ -14,6 +14,7 @@ AI-powered ticket management system for an online school. See `project-scope.md`
 - **Monorepo:** Bun workspaces (`backend`, `frontend`, `shared`)
 - **Forms:** React Hook Form + Zod (with `@hookform/resolvers`)
 - **Testing:** Vitest + React Testing Library (component), Playwright (E2E)
+- **AI:** Vercel AI SDK (`ai` + `@ai-sdk/openai`) — GPT-5-nano for reply polishing
 - **Deployment:** Docker + Railway
 
 ## Project Structure
@@ -154,6 +155,7 @@ docker-compose.yml      — Docker services (dev Postgres, test Postgres, backen
 - `PATCH /api/tickets/:id` — protected, update ticket status/category
 - `PATCH /api/tickets/:id/assign` — protected, assign ticket to agent
 - `POST /api/tickets/:id/messages` — protected, add agent reply to ticket
+- `POST /api/tickets/polish` — protected, polish agent reply text via GPT-5-nano (validates with `polishReplySchema`)
 - `POST /api/tickets/email` — **public** (no auth — webhook endpoint), creates ticket or threads reply onto existing open ticket by matching sender email + subject. HTML bodies are stripped to plain text via `stripHtml()` before storage.
 - `/api/auth/*` — Better Auth endpoints (sign-in, sign-out, session, etc.)
 
@@ -188,7 +190,7 @@ docker-compose.yml      — Docker services (dev Postgres, test Postgres, backen
 - Frontend Nginx: SPA fallback via `try_files`, API proxy to `http://backend:3000`
 
 ## Environment Variables
-- Backend: `PORT`, `TRUSTED_ORIGINS` (comma-separated origins), `NODE_ENV`, `DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`
+- Backend: `PORT`, `TRUSTED_ORIGINS` (comma-separated origins), `NODE_ENV`, `DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `OPENAI_API_KEY`
 - Frontend: `VITE_API_URL` (Better Auth client base URL, e.g. `http://localhost:3000`)
 - See `.env.example` files in each directory
 

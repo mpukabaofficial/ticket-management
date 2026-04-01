@@ -12,7 +12,6 @@ const mockedAxios = vi.mocked(axios, true);
 const mockTicket = {
   id: 1,
   subject: "Cannot access course",
-  body: "I'm having trouble accessing my course materials",
   status: "OPEN" as const,
   category: "TECHNICAL" as const,
   senderEmail: "student@test.com",
@@ -25,6 +24,7 @@ const mockTicket = {
       body: "I'm having trouble accessing my course materials",
       sender: "John Student",
       senderType: "CUSTOMER" as const,
+      isAiGenerated: false,
       createdAt: "2025-03-20T10:00:00.000Z",
     },
     {
@@ -32,6 +32,7 @@ const mockTicket = {
       body: "Let me look into this for you",
       sender: "Agent Smith",
       senderType: "AGENT" as const,
+      isAiGenerated: false,
       createdAt: "2025-03-20T11:00:00.000Z",
     },
   ],
@@ -94,14 +95,12 @@ describe("TicketDetail page", () => {
     expect(screen.getByRole("button", { name: "Send Reply" })).toBeInTheDocument();
   });
 
-  it("shows validation error when submitting empty reply", async () => {
+  it("disables Send Reply button when textarea is empty", async () => {
     mockedAxios.get.mockResolvedValue({ data: { ticket: mockTicket } });
     renderWithProviders();
 
     const submitButton = await screen.findByRole("button", { name: "Send Reply" });
-    await userEvent.click(submitButton);
-
-    expect(await screen.findByText("Message body is required")).toBeInTheDocument();
+    expect(submitButton).toBeDisabled();
   });
 
   it("submits reply and resets form on success", async () => {

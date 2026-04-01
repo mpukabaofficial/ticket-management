@@ -42,9 +42,9 @@ describe("TicketReplyForm", () => {
     renderForm();
 
     expect(screen.getByText("Reply")).toBeInTheDocument();
-    expect(screen.getByLabelText("Message")).toBeInTheDocument();
     expect(screen.getByPlaceholderText("Type your reply...")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Send Reply" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Polish" })).toBeInTheDocument();
   });
 
   it("prevents submitting empty body by disabling the button", () => {

@@ -15,7 +15,8 @@ AI-powered ticket management system for an online school. See `project-scope.md`
 - **Forms:** React Hook Form + Zod (with `@hookform/resolvers`)
 - **Testing:** Vitest + React Testing Library (component), Playwright (E2E)
 - **AI:** Vercel AI SDK (`ai` + `@ai-sdk/openai`) — GPT-5-nano for reply polishing, summarization, and classification
-- **Job Queue:** pg-boss (PostgreSQL-backed) — background job processing for ticket classification
+- **Job Queue:** pg-boss (PostgreSQL-backed) — background job processing for ticket classification and auto-resolution
+- **Charts:** Recharts — stacked bar charts on the dashboard
 - **Deployment:** Docker + Railway
 
 ## Project Structure
@@ -25,7 +26,7 @@ backend/
     app.ts              — Express app setup (CORS, auth handler, routes)
     server.ts           — Server entry point (DB connect + pg-boss start + listen)
     config/             — Environment config (index.ts) + Prisma client (db.ts) + pg-boss queue (queue.ts)
-    jobs/               — Background job workers (classify-ticket.ts)
+    jobs/               — Background job workers (classify-ticket.ts, resolve-ticket.ts)
     lib/auth.ts         — Better Auth configuration
     middleware/auth.ts   — Auth middleware for protected routes
     routes/index.ts     — API route definitions
@@ -39,6 +40,7 @@ backend/
   prisma/
     schema.prisma       — Database schema (includes Better Auth tables + role field)
     seed.ts             — Seeds admin user via Better Auth API
+    seed-tickets.ts     — Seeds ~600 tickets across March 2026 (mixed statuses, AI/agent resolved)
 frontend/
   playwright.config.ts  — Playwright E2E test configuration
   e2e/
@@ -48,7 +50,7 @@ frontend/
   src/
     index.css           — Tailwind imports + shadcn theme variables
     pages/              — Login, Dashboard, Users, Tickets, TicketDetail, NotFound
-    components/         — PrivateRoute, AdminRoute, UsersTable, UserFormDialog, ErrorAlert, TicketsTable, TicketMessages, TicketReplyForm, TicketDetailsSidebar, TicketFilters, Pagination
+    components/         — PrivateRoute, AdminRoute, UsersTable, UserFormDialog, ErrorAlert, TicketsTable, TicketMessages, TicketReplyForm, TicketDetailsSidebar, TicketFilters, TicketSummary, Pagination
     components/ui/      — shadcn/ui components (alert, alert-dialog, badge, button, card, checkbox, dialog, field, input, label, select, separator, skeleton, sonner, table, textarea)
     layouts/            — MainLayout (navbar + sign-out)
     lib/auth-client.ts  — Better Auth client instance
@@ -60,7 +62,7 @@ shared/
     index.ts            — Package entry point (re-exports all schemas, enums, types)
     schemas/            — Zod validation schemas (user.ts, ticket.ts)
     constants/          — Shared enums (role.ts, ticket.ts)
-    types/              — Shared API response types (ticket.ts: Ticket, TicketWithMessages, Message)
+    types/              — Shared API response types (ticket.ts: Ticket, TicketWithMessages, Message, TicketStats, DailyResolution)
 docker-compose.yml      — Docker services (dev Postgres, test Postgres, backend, frontend)
 ```
 
@@ -141,8 +143,9 @@ docker-compose.yml      — Docker services (dev Postgres, test Postgres, backen
 - **Auto-resolve:** `resolve-ticket` pg-boss job reads `backend/knowledge-base.md` and uses GPT-5-nano to attempt resolution. Adds an AGENT message if resolved, otherwise promotes to OPEN.
 - **User** — Better Auth managed + custom `role` field + `deletedAt` (soft delete); relations to sessions, accounts, tickets, messages
 - **Session / Account / Verification** — Better Auth managed tables
-- **Ticket** — Auto-increment Int PK, `status` (default: OPEN), `category` (optional), `senderEmail` + `senderName` (external), optional `assignedToId` → User. No `body` field — the initial message content is stored only in the first Message row.
-- **Message** — UUID PK, `sender` (string, not FK — can be AI/agent/external), `senderType` (CUSTOMER or AGENT), `ticketId` (Int), optional `userId` → User
+- **Ticket** — Auto-increment Int PK, `status` (default: NEW), `category` (optional), `senderEmail` + `senderName` (external), optional `assignedToId` → User. No `body` field — the initial message content is stored only in the first Message row.
+- **Message** — UUID PK, `sender` (string, not FK — can be AI/agent/external), `senderType` (CUSTOMER or AGENT), `isAiGenerated` (Boolean, default false), `ticketId` (Int), optional `userId` → User
+- **Stored function:** `get_ticket_stats(p_month_start)` — PostgreSQL function that computes dashboard stats (totals, AI/agent/unresolved breakdown by day) in a single query
 - **Cascade deletes:** User→Sessions, User→Accounts, Ticket→Messages
 - **Soft delete:** Users have `deletedAt DateTime?` — soft-deleted users have sessions revoked and assigned tickets unassigned
 - Prisma client generated to `backend/src/generated/prisma/client` (gitignored, regenerate with `bun run db:generate`)

@@ -2,6 +2,7 @@ import type { TicketSortableColumn, TicketListQuery, UpdateTicketInput, SenderTy
 import { SenderType } from "shared";
 import type { Prisma } from "../generated/prisma/client";
 import prisma from "../config/db";
+import { stripHtml } from "../utils/strip-html";
 
 const DUPLICATE_WINDOW_MS = 5 * 60 * 1000; // 5 minutes
 

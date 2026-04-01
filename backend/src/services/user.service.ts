@@ -110,6 +110,10 @@ export async function softDeleteUser(id: string, currentUserId: string) {
       select: userSelect,
     }),
     prisma.session.deleteMany({ where: { userId: id } }),
+    prisma.ticket.updateMany({
+      where: { assignedToId: id },
+      data: { assignedToId: null },
+    }),
   ]);
 
   return updatedUser;

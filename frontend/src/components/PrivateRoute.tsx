@@ -1,9 +1,14 @@
+import * as Sentry from "@sentry/react";
 import { Navigate, Outlet } from "react-router";
 import { RiLoaderLine } from "@remixicon/react";
 import { authClient } from "@/lib/auth-client";
 
 export default function PrivateRoute() {
   const { data: session, isPending } = authClient.useSession();
+
+  if (session?.user) {
+    Sentry.setUser({ id: session.user.id, email: session.user.email });
+  }
 
   if (isPending) {
     return (

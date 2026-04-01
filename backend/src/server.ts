@@ -1,9 +1,14 @@
+import { Sentry } from "./config/sentry";
 import app from "./app";
 import { config } from "./config";
 import prisma from "./config/db";
 import boss from "./config/queue";
 import { CLASSIFY_TICKET_QUEUE, classifyTicketHandler } from "./jobs/classify-ticket";
 import { RESOLVE_TICKET_QUEUE, resolveTicketHandler } from "./jobs/resolve-ticket";
+
+process.on("unhandledRejection", (reason) => {
+  Sentry.captureException(reason);
+});
 
 async function start() {
   await prisma.$connect();

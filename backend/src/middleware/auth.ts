@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/bun";
 import type { Request, Response, NextFunction } from "express";
 import { fromNodeHeaders } from "better-auth/node";
 import { auth } from "../lib/auth";
@@ -18,6 +19,7 @@ export async function requireAuth(
 
   req.session = session.session;
   req.user = session.user;
+  Sentry.setUser({ id: session.user.id, email: session.user.email });
   next();
 }
 

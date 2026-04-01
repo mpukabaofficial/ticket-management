@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/react";
 import { Link, Outlet, useNavigate } from "react-router";
 import { Role } from "shared";
 import { authClient } from "@/lib/auth-client";
@@ -11,6 +12,7 @@ export default function MainLayout() {
     await authClient.signOut({
       fetchOptions: {
         onSuccess: () => {
+          Sentry.setUser(null);
           navigate("/login");
         },
       },

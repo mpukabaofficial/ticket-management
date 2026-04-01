@@ -103,7 +103,12 @@ export async function createFromResend(req: Request, res: Response) {
   // Parse sender: "Name <email>" or just "email"
   const fromMatch = rawFrom.match(/^(.+?)\s*<(.+?)>$/);
   const senderEmail = fromMatch ? fromMatch[2] : rawFrom;
-  const senderName = fromMatch ? fromMatch[1].trim() : senderEmail.split("@")[0];
+  const senderName = fromMatch
+    ? fromMatch[1].trim()
+    : senderEmail.split("@")[0]
+        .split(/[._-]/)
+        .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+        .join(" ");
   const body = email.text || stripHtml(email.html || "");
 
   const ticket = await handleInboundEmail(senderEmail, senderName, subject, body);

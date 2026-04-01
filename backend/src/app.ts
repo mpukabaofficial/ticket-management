@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/bun";
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
@@ -46,6 +47,9 @@ app.use(express.json());
 
 app.use("/api", routes);
 
+// Sentry error handler — must be after routes, before global error handler
+Sentry.setupExpressErrorHandler(app);
+
 // Global error handler
 app.use(
   (
@@ -55,11 +59,21 @@ app.use(
     _next: express.NextFunction
   ) => {
     if (err instanceof UserError) {
+      Sentry.withScope((scope) => {
+        scope.setLevel("warning");
+        scope.setTag("error.type", "UserError");
+        Sentry.captureException(err);
+      });
       res.status(409).json({ error: err.message });
       return;
     }
 
     if (err instanceof TicketError) {
+      Sentry.withScope((scope) => {
+        scope.setLevel(err.statusCode >= 500 ? "error" : "warning");
+        scope.setTag("error.type", "TicketError");
+        Sentry.captureException(err);
+      });
       res.status(err.statusCode).json({ error: err.message });
       return;
     }

@@ -98,6 +98,8 @@ export async function handleInboundEmail(
   subject: string,
   body: string,
 ) {
+  const cleanBody = stripHtml(body);
+
   // Check if this is a reply to an existing open ticket from the same sender
   const normalizedSubject = stripReplyPrefixes(subject);
 
@@ -114,7 +116,7 @@ export async function handleInboundEmail(
   if (existingTicket) {
     await prisma.message.create({
       data: {
-        body,
+        body: cleanBody,
         sender: senderName,
         senderType: SenderType.CUSTOMER,
         ticketId: existingTicket.id,
@@ -148,12 +150,12 @@ export async function handleInboundEmail(
   return prisma.ticket.create({
     data: {
       subject,
-      body,
+      body: cleanBody,
       senderEmail: from,
       senderName,
       messages: {
         create: {
-          body,
+          body: cleanBody,
           sender: senderName,
           senderType: SenderType.CUSTOMER,
         },

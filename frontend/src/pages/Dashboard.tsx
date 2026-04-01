@@ -6,16 +6,22 @@ import {
   RiRobotLine,
   RiTimeLine,
 } from "@remixicon/react";
+import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
 import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from "recharts";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  ChartContainer,
+  ChartLegend,
+  ChartLegendContent,
+  ChartTooltip,
+  ChartTooltipContent,
+  type ChartConfig,
+} from "@/components/ui/chart";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorAlert } from "@/components/ErrorAlert";
 import type { TicketStats } from "@/types/ticket";
@@ -35,12 +41,26 @@ function formatDuration(ms: number) {
 }
 
 function formatChartDate(date: string) {
-  // Append T00:00:00 so the date-only string is parsed as local midnight, not UTC
   return new Date(date + "T00:00:00").toLocaleDateString(undefined, {
     month: "short",
     day: "numeric",
   });
 }
+
+const chartConfig = {
+  ai: {
+    label: "AI",
+    color: "var(--chart-1)",
+  },
+  agent: {
+    label: "Agent",
+    color: "var(--chart-2)",
+  },
+  unresolved: {
+    label: "Unresolved",
+    color: "var(--chart-3)",
+  },
+} satisfies ChartConfig;
 
 const statCards = [
   {
@@ -116,30 +136,49 @@ export default function Dashboard() {
 
       <Card className="mt-6">
         <CardHeader>
-          <CardTitle className="text-lg">
-            Tickets by Day
-            <span className="text-sm font-normal text-muted-foreground ml-2">
-              ({new Date().toLocaleTimeString(undefined, { timeZoneName: "short" }).split(" ").pop()})
-            </span>
-          </CardTitle>
+          <CardTitle>Tickets by Day</CardTitle>
+          <CardDescription>
+            {new Date().toLocaleDateString(undefined, { month: "long", year: "numeric" })}
+          </CardDescription>
         </CardHeader>
         <CardContent>
           {isPending ? (
             <Skeleton className="h-64 w-full" />
           ) : data?.dailyResolutions.length ? (
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={data.dailyResolutions}>
-                <XAxis dataKey="date" tickFormatter={formatChartDate} tick={{ fontSize: 12 }} />
-                <YAxis allowDecimals={false} />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="ai" name="AI" stackId="a" fill="#6366f1" />
-                <Bar dataKey="agent" name="Agent" stackId="a" fill="#22c55e" />
-                <Bar dataKey="unresolved" name="Unresolved" stackId="a" fill="#f97316" />
+            <ChartContainer config={chartConfig}>
+              <BarChart accessibilityLayer data={data.dailyResolutions}>
+                <CartesianGrid vertical={false} />
+                <XAxis
+                  dataKey="date"
+                  tickLine={false}
+                  tickMargin={10}
+                  axisLine={false}
+                  tickFormatter={formatChartDate}
+                />
+                <ChartTooltip content={<ChartTooltipContent hideLabel />} />
+                <ChartLegend content={<ChartLegendContent />} />
+                <Bar
+                  dataKey="ai"
+                  stackId="a"
+                  fill="var(--color-ai)"
+                  radius={[0, 0, 4, 4]}
+                />
+                <Bar
+                  dataKey="agent"
+                  stackId="a"
+                  fill="var(--color-agent)"
+                  radius={[0, 0, 0, 0]}
+                />
+                <Bar
+                  dataKey="unresolved"
+                  stackId="a"
+                  fill="var(--color-unresolved)"
+                  radius={[4, 4, 0, 0]}
+                />
               </BarChart>
-            </ResponsiveContainer>
+            </ChartContainer>
           ) : (
-            <p className="text-sm text-muted-foreground">No resolved tickets yet.</p>
+            <p className="text-sm text-muted-foreground">No tickets yet.</p>
           )}
         </CardContent>
       </Card>

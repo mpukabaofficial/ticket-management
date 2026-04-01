@@ -14,7 +14,6 @@ const mockedAxios = vi.mocked(axios, true);
 const defaultTicket: Ticket = {
   id: 1,
   subject: "Test ticket",
-  body: "Test body",
   status: "OPEN",
   category: null,
   senderEmail: "john@example.com",

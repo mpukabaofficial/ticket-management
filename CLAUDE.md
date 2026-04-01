@@ -14,7 +14,8 @@ AI-powered ticket management system for an online school. See `project-scope.md`
 - **Monorepo:** Bun workspaces (`backend`, `frontend`, `shared`)
 - **Forms:** React Hook Form + Zod (with `@hookform/resolvers`)
 - **Testing:** Vitest + React Testing Library (component), Playwright (E2E)
-- **AI:** Vercel AI SDK (`ai` + `@ai-sdk/openai`) — GPT-5-nano for reply polishing
+- **AI:** Vercel AI SDK (`ai` + `@ai-sdk/openai`) — GPT-5-nano for reply polishing, summarization, and classification
+- **Job Queue:** pg-boss (PostgreSQL-backed) — background job processing for ticket classification
 - **Deployment:** Docker + Railway
 
 ## Project Structure
@@ -22,8 +23,9 @@ AI-powered ticket management system for an online school. See `project-scope.md`
 backend/
   src/
     app.ts              — Express app setup (CORS, auth handler, routes)
-    server.ts           — Server entry point (DB connect + listen)
-    config/             — Environment config (index.ts) + Prisma client (db.ts)
+    server.ts           — Server entry point (DB connect + pg-boss start + listen)
+    config/             — Environment config (index.ts) + Prisma client (db.ts) + pg-boss queue (queue.ts)
+    jobs/               — Background job workers (classify-ticket.ts)
     lib/auth.ts         — Better Auth configuration
     middleware/auth.ts   — Auth middleware for protected routes
     routes/index.ts     — API route definitions
@@ -157,7 +159,7 @@ docker-compose.yml      — Docker services (dev Postgres, test Postgres, backen
 - `POST /api/tickets/:id/messages` — protected, add agent reply to ticket
 - `POST /api/tickets/:id/summarize` — protected, generate AI summary of ticket and conversation history via GPT-5-nano
 - `POST /api/tickets/polish` — protected, polish agent reply text via GPT-5-nano (validates with `polishReplySchema`)
-- `POST /api/tickets/email` — **public** (no auth — webhook endpoint), creates ticket or threads reply onto existing open ticket by matching sender email + subject. HTML bodies are stripped to plain text via `stripHtml()` before storage.
+- `POST /api/tickets/email` — **public**. Auto-classifies new tickets in the background via GPT-5-nano (fire-and-forget, best-effort). (no auth — webhook endpoint), creates ticket or threads reply onto existing open ticket by matching sender email + subject. HTML bodies are stripped to plain text via `stripHtml()` before storage.
 - `/api/auth/*` — Better Auth endpoints (sign-in, sign-out, session, etc.)
 
 ## Key Patterns

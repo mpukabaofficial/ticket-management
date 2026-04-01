@@ -2,6 +2,8 @@ import type { TicketSortableColumn, TicketListQuery, UpdateTicketInput, SenderTy
 import { SenderType } from "shared";
 import type { Prisma } from "../generated/prisma/client";
 import prisma from "../config/db";
+import boss from "../config/queue";
+import { CLASSIFY_TICKET_QUEUE } from "../jobs/classify-ticket";
 import { stripHtml } from "../utils/strip-html";
 
 const DUPLICATE_WINDOW_MS = 5 * 60 * 1000; // 5 minutes
@@ -146,7 +148,7 @@ export async function handleInboundEmail(
     );
   }
 
-  return prisma.ticket.create({
+  const ticket = await prisma.ticket.create({
     data: {
       subject,
       senderEmail: from,
@@ -161,6 +163,15 @@ export async function handleInboundEmail(
     },
     select: ticketWithMessagesSelect,
   });
+
+  // Enqueue classification job
+  boss.send(CLASSIFY_TICKET_QUEUE, {
+    ticketId: ticket.id,
+    subject: ticket.subject,
+    body: ticket.messages[0]?.body ?? "",
+  });
+
+  return ticket;
 }
 
 export async function assignTicket(ticketId: number, userId: string) {

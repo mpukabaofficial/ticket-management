@@ -27,8 +27,8 @@ import type { Ticket } from "@/types/ticket";
 
 function StatusBadge({ status }: { status: TicketStatusType }) {
   const styles: Record<string, string> = {
-    [TicketStatus.OPEN]: "bg-primary/10 text-primary border-primary/20",
-    [TicketStatus.RESOLVED]: "bg-emerald-50 text-emerald-700 border-emerald-200",
+    [TicketStatus.OPEN]: "bg-emerald-50 text-emerald-700 border-emerald-200",
+    [TicketStatus.RESOLVED]: "bg-primary/10 text-primary border-primary/20",
     [TicketStatus.CLOSED]: "bg-muted text-muted-foreground border-border",
   };
   const cls = styles[status] ?? "bg-muted text-muted-foreground border-border";
